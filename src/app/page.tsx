@@ -1,17 +1,26 @@
+'use client'
+
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Book, Code, Globe, Sparkles } from "lucide-react";
-import { getServerSession } from "next-auth";
+import { useSession } from "next-auth/react";
+import { useTextAreaPrompt } from "@/store/textAreaPrompt";
 
-export default async function Home() {
-  const session = await getServerSession();
-  const user = session?.user;
+export default function Home() {
+  const prompt = useTextAreaPrompt(state => state.prompt);
+  const { data: session } = useSession();
+  const userName = session?.user?.name;
+
+  if (prompt) {
+    return <div className="flex-1">
+    </div>;
+  }
 
   return (
-    <div className="w-full max-w-2xl m-auto flex flex-col gap-8 sm:gap-6 px-6 md:px-10">
+    <div className="w-full max-w-2xl m-auto flex flex-col gap-8 sm:gap-6 flex-1 justify-center overflow-y-auto [&::-webkit-scrollbar]:hidden pt-20">
       <h1 className="text-3xl font-bold">
-        How can I help you{user?.name ? `, ${user.name.split(" ")[0]}` : ""}?
+        How can I help you{userName ? `, ${userName.split(" ")[0]}` : ""}?
       </h1>
 
       <Tabs defaultValue="create" className="w-full">
@@ -96,6 +105,7 @@ function TabTrigger({ children, value }: { children: React.ReactNode, value: str
 
 
 function TabContent({ contents, value }: { contents: string[], value: string }) {
+  const setPrompt = useTextAreaPrompt(state => state.setPrompt);
   return (
     <TabsContent className="flex flex-col w-full gap-2" value={value}>
       {contents.map((content, index) => (
@@ -103,6 +113,7 @@ function TabContent({ contents, value }: { contents: string[], value: string }) 
           key={index}
           variant="ghost"
           className="flex items-center text-wrap! justify-start text-start py-2.5 px-3 font-normal tracking-wider h-auto"
+          onClick={() => setPrompt(content)}
         >
           {content}
         </Button>

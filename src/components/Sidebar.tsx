@@ -22,13 +22,13 @@ export default function SideBar() {
     return (
         <>
             {isOpen && (
-                <div className="absolute left-0 top-0 w-full h-full max-h-screen bg-black/50 z-0 md:hidden"
+                <div className="absolute left-0 top-0 w-full h-full max-h-screen bg-black/50 z-10 md:hidden"
                     onClick={() => setIsOpen(false)}
                 />
             )}
             <aside className={cn(
                 "absolute top-0 left-0 md:relative z-10 w-0 flex flex-col items-center p-0 bg-sidebar gap-4 h-full transition-all duration-150 overflow-hidden",
-                isOpen && "min-w-72 md:min-w-64 p-3.5 md:pt-1 pb-5"
+                isOpen && "w-72 md:w-64 p-3.5 md:pt-1 pb-5"
             )}>
                 {isOpen && <>
                     <Link href="/" className="text-xl font-bold">

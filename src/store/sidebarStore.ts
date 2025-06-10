@@ -7,7 +7,7 @@ type Store = {
 
 export const useSidebarStore = create<Store>()(
     (set) => ({
-        isOpen: true,
+        isOpen: false,
         setIsOpen: (isOpen: boolean) => set({ isOpen }),
     }),
 )

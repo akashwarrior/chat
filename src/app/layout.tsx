@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Providers from "@/app/providers";
-import HeaderOptions from "@/components/HeaderOptions";
-import SideBar from "@/components/Sidebar";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
-import "@/app/globals.css";
+import HeaderOptions from "@/components/HeaderOptions";
+import SideBar from "@/components/Sidebar";
 import SearchModal from "@/components/SearchModal";
+import ChatTextArea from "@/components/ChatTextArea";
+import "@/app/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,14 +32,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative bg-sidebar h-screen flex flex-col`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers session={session}>
           <HeaderOptions />
           <SearchModal />
-          <div className="flex flex-1">
+          <div className="flex flex-1 max-h-full">
             <SideBar />
-            <main className="flex-1 rounded-tl-xl bg-background flex">
+            <main className="flex-1 rounded-tl-xl bg-background flex flex-col relative px-4 items-center justify-center">
               {children}
+              <ChatTextArea />
             </main>
           </div>
         </Providers>
