@@ -40,15 +40,16 @@ export default function ChatTextArea() {
     }, [value, textareaRef.current]);
 
 
-    const handleSubmit = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
-        const target = e.currentTarget;
-        if (target.value.trim() === "") return;
+        const value = e.currentTarget.value;
+        if (value.trim() === "") return;
 
         setValue("");
-        setPrompt(target.value);
+        setPrompt(value);
+
         if (pathname === '/') {
-            router.push(`/chats/1`);
+            router.push(`/chats/${crypto.randomUUID()}`);
         }
     }
 

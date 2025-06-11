@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Providers from "@/app/providers";
+import { Toaster } from "sonner";
 import { authOptions } from "@/lib/auth";
+import Providers from "@/app/providers";
 import { getServerSession } from "next-auth";
 import HeaderOptions from "@/components/HeaderOptions";
 import SideBar from "@/components/Sidebar";
@@ -43,6 +44,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <ChatTextArea />
             </main>
           </div>
+          <Toaster />
         </Providers>
       </body>
     </html>
