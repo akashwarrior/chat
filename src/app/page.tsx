@@ -5,14 +5,14 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Book, Code, Globe, Sparkles } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useTextAreaPrompt } from "@/store/textAreaPrompt";
+import { useTextAreaValue } from "@/store/textAreaValue";
 
 export default function Home() {
-  const prompt = useTextAreaPrompt(state => state.prompt);
+  const value = useTextAreaValue(state => state.value);
   const { data: session } = useSession();
   const userName = session?.user?.name;
 
-  if (prompt) {
+  if (value) {
     return <div className="flex-1">
     </div>;
   }
@@ -105,7 +105,7 @@ function TabTrigger({ children, value }: { children: React.ReactNode, value: str
 
 
 function TabContent({ contents, value }: { contents: string[], value: string }) {
-  const setPrompt = useTextAreaPrompt(state => state.setPrompt);
+  const setValue = useTextAreaValue(state => state.setValue);
   return (
     <TabsContent className="flex flex-col w-full gap-2" value={value}>
       {contents.map((content, index) => (
@@ -113,7 +113,7 @@ function TabContent({ contents, value }: { contents: string[], value: string }) 
           key={index}
           variant="ghost"
           className="flex items-center text-wrap! justify-start text-start py-2.5 px-3 font-normal tracking-wider h-auto"
-          onClick={() => setPrompt(content)}
+          onClick={() => setValue(content)}
         >
           {content}
         </Button>

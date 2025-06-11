@@ -42,7 +42,7 @@ export default function HeaderOptions() {
             )} />
 
             {/* Sidebar toggle button */}
-            <div className="absolute left-1.5 top-1.5 p-1 flex items-center bg-sidebar rounded-md w-fit overflow-hidden z-50">
+            <div className="absolute left-1.5 top-1.5 p-1 flex items-center rounded-md w-fit overflow-hidden z-50 backdrop-blur-sm bg-sidebar/60">
                 <Button
                     size="icon"
                     variant="ghost"
@@ -76,10 +76,15 @@ export default function HeaderOptions() {
 
             {/* Settings and theme toggle */}
             <div className={cn(
-                "absolute right-1.5 top-1.5 p-1 flex items-center bg-sidebar rounded-md z-20",
+                "absolute right-1.5 top-1.5 p-1 flex items-center rounded-md z-20 backdrop-blur-sm bg-sidebar/60",
                 isSidebarOpen && "md:rounded-full"
             )}>
-                <Button variant="ghost" size="icon" tooltip="Settings">
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    className="hidden sm:flex"
+                    tooltip="Settings"
+                >
                     <Settings2 />
                 </Button>
                 <ThemeToggle />

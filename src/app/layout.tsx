@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Providers session={session}>
           <HeaderOptions />
           <SearchModal />
-          <div className="flex flex-1 max-h-full">
+          <div className="flex flex-1 overflow-hidden">
             <SideBar />
             <main className="flex-1 rounded-tl-xl bg-background flex flex-col relative px-4 items-center justify-center">
               {children}
