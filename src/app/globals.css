@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Streamdown CSS */
+@source "@/../node_modules/streamdown/dist/index.js";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -118,10 +121,6 @@
   }
 
   body {
-    @apply bg-sidebar text-foreground h-full relative flex flex-col;
-  }
-
-  html {
-    @apply h-full;
+    @apply bg-background text-foreground;
   }
 }

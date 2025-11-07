@@ -1,8 +1,6 @@
 'use client'
 
 import { Clock } from "lucide-react"
-import { useSearchModalStore } from "@/store/searchModalStore"
-
 import {
     CommandDialog,
     CommandEmpty,
@@ -12,10 +10,12 @@ import {
     CommandList,
 } from "@/components/ui/command"
 
+interface SearchModalProps {
+    isOpen: boolean;
+    setIsOpen: (value: boolean) => void;
+}
 
-export default function SearchModal() {
-    const { isOpen, setIsOpen } = useSearchModalStore();
-
+export default function SearchModal({ isOpen, setIsOpen }: SearchModalProps) {
     return (
         <CommandDialog
             open={isOpen}

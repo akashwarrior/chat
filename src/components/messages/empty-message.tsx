@@ -1,0 +1,124 @@
+'use client'
+
+import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Book, Code, Globe, Sparkles } from "lucide-react";
+import { useChatInputStore } from "@/store/chat-input-store";
+
+export default function EmptyMessage() {
+    const { input, setInput } = useChatInputStore();
+    const userName = "Demo User";
+
+    return !input && (
+        <div className="w-full flex flex-col gap-8 sm:gap-6 flex-1 justify-center overflow-y-auto [&::-webkit-scrollbar]:hidden pt-20">
+            <h1 className="text-3xl font-bold">
+                How can I help you{userName ? `, ${userName.split(" ")[0]}` : ""}?
+            </h1>
+
+            <Tabs defaultValue="create" className="w-full">
+                <TabsList className="bg-transparent mb-8 sm:mb-5 gap-4 flex items-center justify-around w-full sm:justify-start flex-wrap h-auto">
+                    <TabTrigger value="create">
+                        <Sparkles /> Create
+                    </TabTrigger>
+
+                    <TabTrigger value="explore">
+                        <Globe /> Explore
+                    </TabTrigger>
+
+                    <TabTrigger value="code">
+                        <Code /> Code
+                    </TabTrigger>
+
+                    <TabTrigger value="learn">
+                        <Book /> Learn
+                    </TabTrigger>
+
+                </TabsList>
+
+                <TabContent
+                    value="create"
+                    contents={[
+                        "Write a short story about a robot discovering emotions",
+                        "Help me outline a sci-fi novel set in a post-apocalyptic world",
+                        "Create a character profile for a complex villain with sympathetic motives",
+                        "Give me 5 creative writing prompts for flash fiction",
+                    ]}
+                    setInput={setInput}
+                />
+
+                <TabContent
+                    value="explore"
+                    contents={[
+                        "Good books for fans of Rick Rubin",
+                        "Countries ranked by number of corgis",
+                        "Most successful companies in the world",
+                        "How much does Claude cost?",
+                    ]}
+                    setInput={setInput}
+                />
+                <TabContent
+                    value="code"
+                    contents={[
+                        "Write code to invert a binary search tree in Python",
+                        "What's the difference between Promise.all and Promise.allSettled?",
+                        "Explain React's useEffect cleanup function",
+                        "Best practices for error handling in async/await",
+                    ]}
+                    setInput={setInput}
+                />
+
+                <TabContent
+                    value="learn"
+                    contents={[
+                        "Beginner's guide to TypeScript",
+                        "Explain the CAP theorem in distributed systems",
+                        "Why is AI so expensive?",
+                        "Are black holes real?",
+                    ]}
+                    setInput={setInput}
+                />
+
+            </Tabs>
+        </div>
+    );
+}
+
+
+function TabTrigger({ children, value }: { children: React.ReactNode, value: string }) {
+    return (
+        <TabsTrigger
+            value={value}
+            className={cn(
+                "rounded-lg! sm:rounded-full! sm:px-6! flex items-center gap-1! sm:gap-2! flex-col sm:flex-row h-auto! p-3! sm:py-2! sm:max-w-fit",
+                buttonVariants({ variant: "outline" }),
+                "data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground!",
+            )}
+        >
+            {children}
+        </TabsTrigger>
+    );
+}
+
+interface TabContentProps {
+    contents: string[];
+    value: string;
+    setInput: (input: string) => void;
+}
+
+function TabContent({ contents, value, setInput }: TabContentProps) {
+    return (
+        <TabsContent className="flex flex-col w-full gap-2" value={value}>
+            {contents.map((content, index) => (
+                <Button
+                    key={index}
+                    variant="ghost"
+                    className="flex items-center text-wrap! justify-start text-start py-2.5 px-3 font-normal tracking-wider h-auto"
+                    onClick={() => setInput(content)}
+                >
+                    {content}
+                </Button>
+            ))}
+        </TabsContent>
+    );
+}
