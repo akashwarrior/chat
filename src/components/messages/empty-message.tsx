@@ -5,10 +5,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Book, Code, Globe, Sparkles } from "lucide-react";
 import { useChatInputStore } from "@/store/chat-input-store";
+import { useSession } from "@/lib/auth/auth-client";
 
 export default function EmptyMessage() {
+    const { data: session } = useSession();
     const { input, setInput } = useChatInputStore();
-    const userName = "Demo User";
+    const userName = session?.user?.name;
 
     return !input && (
         <div className="w-full flex flex-col gap-8 sm:gap-6 flex-1 justify-center overflow-y-auto [&::-webkit-scrollbar]:hidden pt-20">
@@ -91,8 +93,8 @@ function TabTrigger({ children, value }: { children: React.ReactNode, value: str
             value={value}
             className={cn(
                 "rounded-lg! sm:rounded-full! sm:px-6! flex items-center gap-1! sm:gap-2! flex-col sm:flex-row h-auto! p-3! sm:py-2! sm:max-w-fit",
-                buttonVariants({ variant: "outline" }),
                 "data-[state=active]:bg-primary! data-[state=active]:text-primary-foreground!",
+                buttonVariants({ variant: "outline" }),
             )}
         >
             {children}
@@ -111,7 +113,7 @@ function TabContent({ contents, value, setInput }: TabContentProps) {
         <TabsContent className="flex flex-col w-full gap-2" value={value}>
             {contents.map((content, index) => (
                 <Button
-                    key={index}
+                    key={`tab-content-${index}`}
                     variant="ghost"
                     className="flex items-center text-wrap! justify-start text-start py-2.5 px-3 font-normal tracking-wider h-auto"
                     onClick={() => setInput(content)}

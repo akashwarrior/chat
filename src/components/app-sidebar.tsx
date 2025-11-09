@@ -2,73 +2,131 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "./ui/button"
-import { LogInIcon, PinIcon, PinOffIcon, SearchIcon, XIcon } from "lucide-react"
+import { mutate } from "swr"
+import { toast } from "sonner"
+import { useState } from "react"
 import { Input } from "./ui/input"
+import { Button } from "./ui/button"
+import type { User } from "better-auth"
+import { usePathname, useRouter } from "next/navigation"
+import { unstable_serialize } from "swr/infinite"
+import { getChatHistoryPaginationKey, SidebarHistory } from "./sidebar-history"
+import { LogInIcon, SearchIcon } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar"
+import {
+  Dialog,
+  DialogFooter,
+  DialogDescription,
+  DialogHeader,
+  DialogContent,
+  DialogTitle,
+  DialogClose
+} from "./ui/dialog"
 
-export function AppSidebar() {
-  const session = {
-    user: {
-      name: "John Doe",
-      email: "john.doe@example.com",
-      image: undefined,
+export function AppSidebar({ user }: { user?: User }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const handleNewChat = () => {
+    if (pathname === "/") {
+      router.refresh();
+      return;
     }
-  }
+
+    router.back();
+  };
+
+  const handleDialogOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setDeleteId(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) {
+      return;
+    }
+
+    const chatId = deleteId;
+    const currentId = pathname.split("/").pop();
+
+    const deletePromise = fetch(`/api/chat?id=${chatId}`, {
+      method: "DELETE",
+    });
+
+    toast.promise(deletePromise, {
+      loading: "Deleting chat...",
+      success: () => {
+        mutate(unstable_serialize(getChatHistoryPaginationKey));
+        return "Chat deleted successfully";
+      },
+      error: "Failed to delete chat",
+      finally: () => setDeleteId(null),
+    });
+
+    if (currentId === chatId) {
+      router.back();
+    }
+  };
+
+
   return (
     <Sidebar>
       <SidebarHeader className="p-3.5 gap-4 flex flex-col items-center">
         <Link href="/" className="text-xl font-bold">
           Chat
         </Link>
-
-        <Link href="/" className="w-full">
-          <Button className="w-full">
-            New Chat
-          </Button>
-        </Link>
+        <Button
+          onClick={handleNewChat}
+          className="w-full"
+        >
+          New Chat
+        </Button>
 
         <div className="flex items-center rounded-md w-full border-b border-slate-700 px-2 focus-within:bg-secondary focus-within:text-secondary-foreground focus-within:border-ring transition-all duration-150">
           <SearchIcon size={14} />
           <Input
             placeholder="Search your threads..."
-            className="flex-1 border-none focus-visible:ring-0 bg-transparent!"
+            className="flex-1 border-none bg-transparent! focus-visible:ring-0"
           />
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="p-3.5">
-        <span className="text-xs font-bold text-primary pt-1 px-2">Today</span>
-        <div className="flex flex-col gap-1">
-          <ThreadButton title="Greeting" href="/" pinned={true} selected={true} />
-          <ThreadButton title="New Thread" href="/" pinned={false} selected={false} />
-          <ThreadButton title="Greeting" href="/" pinned={false} selected={false} />
-        </div>
+      <SidebarContent className="p-3.5 flex-1">
+        {user ? (
+          <SidebarHistory
+            showDialog={setDeleteId}
+          />
+        ) : (
+          <div className="px-2 text-sm text-zinc-500">
+            Login to save and revisit previous chats!
+          </div>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
-        {session?.user ? (
+        {user ? (
           <Link href="/settings/account" className="w-full">
             <Button
               variant="ghost"
               className="w-full justify-start items-center gap-3 py-7"
             >
               <Image
-                src={session.user?.image || "/images/avatar.png"}
+                src={user.image || "/images/avatar.png"}
                 alt="User"
                 width={32}
                 height={32}
                 className="rounded-full"
               />
               <div className="text-left">
-                <p className="text-sm font-medium">{session.user.name}</p>
-                <p className="text-xs text-muted-foreground">{session.user.email}</p>
+                <p className="text-sm font-medium">{user.name}</p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>
             </Button>
           </Link>
@@ -76,43 +134,35 @@ export function AppSidebar() {
           <Link href="/auth" className="w-full">
             <Button
               variant="ghost"
-              className="w-full justify-start items-center gap-5 py-6 px-5!"
+              className="w-full justify-start items-center gap-5 py-6 px-5"
             >
               <LogInIcon /> Login
             </Button>
           </Link>
         )}
       </SidebarFooter>
-    </Sidebar>
-  )
-}
 
-function ThreadButton({ title, href, pinned, selected }: { title: string, href: string, pinned: boolean, selected: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "w-full flex items-center justify-between group/item overflow-hidden",
-        buttonVariants({ variant: "ghost", className: selected && "bg-accent" })
-      )}
-    >
-      <span className="text-sm flex-1 font-normal">{title}</span>
-      <div className="-mr-3 flex translate-x-full group-hover/item:translate-x-0 transition-transform duration-150">
-        <Button
-          size="sm"
-          variant="ghost"
-          className="w-8 h-8 hover:bg-sidebar-border hover:shadow-sm"
-        >
-          {pinned ? <PinOffIcon /> : <PinIcon />}
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="w-8 h-8 hover:bg-sidebar-border hover:shadow-sm"
-        >
-          <XIcon />
-        </Button>
-      </div>
-    </Link>
+      <Dialog onOpenChange={handleDialogOpenChange} open={!!deleteId}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you absolutely sure?</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. This will permanently delete your
+              chat and remove it from our servers.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button onClick={handleDelete}>
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Sidebar>
   )
 }
