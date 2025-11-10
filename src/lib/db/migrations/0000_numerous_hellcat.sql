@@ -24,24 +24,6 @@ CREATE TABLE "Message" (
 	"createdAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "Stream" (
-	"id" uuid PRIMARY KEY NOT NULL,
-	"chatId" uuid NOT NULL,
-	"createdAt" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "Suggestion" (
-	"id" uuid PRIMARY KEY NOT NULL,
-	"documentId" uuid NOT NULL,
-	"documentCreatedAt" timestamp DEFAULT now() NOT NULL,
-	"originalText" text NOT NULL,
-	"suggestedText" text NOT NULL,
-	"description" text,
-	"isResolved" boolean DEFAULT false NOT NULL,
-	"userId" text NOT NULL,
-	"createdAt" timestamp DEFAULT now() NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
@@ -93,8 +75,5 @@ CREATE TABLE "verification" (
 ALTER TABLE "Chat" ADD CONSTRAINT "Chat_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "Document" ADD CONSTRAINT "Document_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "Message" ADD CONSTRAINT "Message_chatId_Chat_id_fk" FOREIGN KEY ("chatId") REFERENCES "public"."Chat"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "Stream" ADD CONSTRAINT "Stream_chatId_Chat_id_fk" FOREIGN KEY ("chatId") REFERENCES "public"."Chat"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "Suggestion" ADD CONSTRAINT "Suggestion_documentId_Document_id_fk" FOREIGN KEY ("documentId") REFERENCES "public"."Document"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "Suggestion" ADD CONSTRAINT "Suggestion_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;

@@ -20,8 +20,7 @@ export default function AuthPage() {
             },
             {
                 onRequest: () => setIsLoading(true),
-                onError: (error) => {
-                    console.error(error);
+                onError: () => {
                     toast.error("Something went wrong");
                     setIsLoading(false);
                 },

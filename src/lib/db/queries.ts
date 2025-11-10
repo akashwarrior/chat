@@ -1,13 +1,14 @@
 import { db } from "@/lib/db";
 import type { Chat, DBMessage } from "@/lib/db/schema";
-import { chat, message, stream } from "@/lib/db/schema";
+import type { VisibilityType } from "@/lib/types";
+import { chat, message } from "@/lib/db/schema";
 import { and, asc, desc, eq, gte, inArray } from "drizzle-orm";
 
 export async function saveChat(newChat: Omit<Chat, "createdAt" | "visibility">) {
   try {
     return await db.insert(chat).values({
       ...newChat,
-      visibility: 'private',
+      visibility: "private" as VisibilityType,
       createdAt: new Date(),
     });
   } catch {
@@ -18,7 +19,6 @@ export async function saveChat(newChat: Omit<Chat, "createdAt" | "visibility">) 
 export async function deleteChatById({ id }: { id: string }) {
   try {
     await db.delete(message).where(eq(message.chatId, id));
-    await db.delete(stream).where(eq(stream.chatId, id));
 
     const [chatsDeleted] = await db
       .delete(chat)
@@ -30,7 +30,7 @@ export async function deleteChatById({ id }: { id: string }) {
   }
 }
 
-export async function getChatsByUserId({ userId, limit, skip }: { userId: string; limit: number; skip: number }) {
+export async function getChatsByUserId({ limit, skip, userId }: { limit: number; skip: number; userId: string }) {
   try {
     const chats = await db
       .select()
@@ -62,8 +62,7 @@ export async function getChatById({ id }: { id: string }) {
 export async function saveMessages({ messages }: { messages: DBMessage[] }) {
   try {
     return await db.insert(message).values(messages);
-  } catch (e) {
-    console.error(e);
+  } catch {
     throw new Error("Failed to save messages");
   }
 }
@@ -116,5 +115,13 @@ export async function deleteMessagesByChatIdAfterTimestamp({
     }
   } catch {
     throw new Error("Failed to delete messages by chat id after timestamp");
+  }
+}
+
+export async function updateChatVisibilityById({ chatId, visibility }: { chatId: string; visibility: VisibilityType }) {
+  try {
+    return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
+  } catch {
+    throw new Error("Failed to update chat visibility by id");
   }
 }

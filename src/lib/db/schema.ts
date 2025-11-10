@@ -25,7 +25,7 @@ export const chat = pgTable("Chat", {
 export type Chat = InferSelectModel<typeof chat>;
 
 export const message = pgTable("Message", {
-  id: text("id").primaryKey(),
+  id: uuid("id").primaryKey(),
   chatId: uuid("chatId").notNull().references(() => chat.id),
   role: varchar("role").notNull(),
   parts: json("parts").notNull(),
@@ -50,14 +50,3 @@ export const document = pgTable(
 );
 
 export type Document = InferSelectModel<typeof document>;
-
-export const stream = pgTable(
-  "Stream",
-  {
-    id: uuid("id").primaryKey(),
-    chatId: uuid("chatId").notNull().references(() => chat.id),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-  }
-);
-
-export type Stream = InferSelectModel<typeof stream>;
