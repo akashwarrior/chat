@@ -10,6 +10,7 @@ import { Textarea } from "./ui/textarea"
 import { PreviewAttachment } from "./messages/preview-attachment"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import { ArrowUpIcon, ChevronDownIcon, CpuIcon, PaperclipIcon, StopCircleIcon } from "lucide-react"
+import { toast } from "sonner"
 
 type ChatInputProps = {
     isLoading: boolean;
@@ -86,39 +87,47 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
         event.currentTarget.form?.requestSubmit();
     };
 
-    const readFileAsDataUrl = (file: File) =>
-        new Promise<Attachment>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                resolve({
-                    mediaType: file.type,
-                    name: file.name,
-                    url: reader.result as string,
-                });
-            };
-            reader.readAsDataURL(file);
-        });
+    const uploadFile = async (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const response = await fetch("/api/files/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return {
+                    ...data,
+                } as Attachment;
+            }
+            const { error } = await response.json();
+            toast.error(error);
+        } catch (_error) {
+            toast.error("Failed to upload file, please try again!");
+        }
+    }
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(event.target.files ?? []);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
 
         if (files.length === 0) {
             return;
         }
-
         setUploadQueue(files.map((file) => file.name));
-
-        const uploadedAttachments = await Promise.all(files.map(readFileAsDataUrl));
-
-        if (uploadedAttachments.length > 0) {
-            await new Promise((resolve) => setTimeout(resolve, UPLOAD_PREVIEW_DELAY_MS));
-            setAttachments((current) => [...current, ...uploadedAttachments]);
-        }
-
-        setUploadQueue([]);
-
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
+        try {
+            const uploadedAttachments = (await Promise.all(files.map(uploadFile))).filter(attachment => !!attachment);
+            if (uploadedAttachments.length > 0) {
+                await new Promise((resolve) => setTimeout(resolve, UPLOAD_PREVIEW_DELAY_MS));
+                setAttachments((current) => [...current, ...uploadedAttachments]);
+            }
+        } finally {
+            setUploadQueue([]);
         }
     };
 
