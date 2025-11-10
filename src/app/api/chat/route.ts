@@ -21,15 +21,9 @@ import {
 
 export async function POST(request: Request) {
     try {
-        const session = await auth.api.getSession({
-            headers: request.headers,
-        });
         const body = await request.json();
+        const userId = request.headers.get("x-user-id") as string;
         const { id, messages, modelId = DEFAULT_MODEL, trigger } = body;
-
-        if (!session?.user) {
-            return new Response("Unauthorized", { status: 401 });
-        }
 
         const chat = await getChatById({ id });
 
@@ -37,7 +31,7 @@ export async function POST(request: Request) {
         const promises: Promise<unknown>[] = [];
 
         if (chat) {
-            if (chat.userId !== session.user.id) {
+            if (chat.userId !== userId) {
                 return new Response("Forbidden", { status: 403 });
             }
         } else {
@@ -52,7 +46,7 @@ export async function POST(request: Request) {
             }).then(({ text }) => {
                 return saveChat({
                     id,
-                    userId: session.user.id,
+                    userId,
                     title: text,
                 });
             }));
