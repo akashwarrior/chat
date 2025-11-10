@@ -1,7 +1,6 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { user } from "./auth-schema";
 import {
-  boolean,
   json,
   pgTable,
   text,
@@ -51,23 +50,6 @@ export const document = pgTable(
 );
 
 export type Document = InferSelectModel<typeof document>;
-
-export const suggestion = pgTable(
-  "Suggestion",
-  {
-    id: uuid("id").primaryKey(),
-    documentId: uuid("documentId").notNull().references(() => document.id),
-    documentCreatedAt: timestamp("documentCreatedAt").defaultNow().notNull(),
-    originalText: text("originalText").notNull(),
-    suggestedText: text("suggestedText").notNull(),
-    description: text("description"),
-    isResolved: boolean("isResolved").notNull().default(false),
-    userId: text("userId").notNull().references(() => user.id),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-  }
-);
-
-export type Suggestion = InferSelectModel<typeof suggestion>;
 
 export const stream = pgTable(
   "Stream",

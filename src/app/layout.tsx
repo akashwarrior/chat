@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Pixelify_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
-import Providers from "@/providers";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 const pixelify_Sans = Pixelify_Sans({ subsets: ["latin"] });
@@ -23,7 +23,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${pixelify_Sans.className} antialiased`}>
-        <Providers>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+
           {children}
 
           <Toaster
@@ -33,8 +39,7 @@ export default function RootLayout({
             closeButton
           />
 
-        </Providers>
-
+        </ThemeProvider>
       </body>
     </html>
   );

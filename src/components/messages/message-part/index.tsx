@@ -45,9 +45,11 @@ export function MessagePart({
         return (
           <PreviewAttachment
             key={key}
+            className={cn(message.role === "user" && "ml-auto")}
             attachment={{
               name: part.filename ?? "",
-              ...part,
+              url: part.url,
+              mediaType: part.mediaType,
             }}
           />
         );

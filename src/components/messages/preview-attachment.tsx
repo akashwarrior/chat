@@ -1,13 +1,16 @@
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 import type { Attachment } from "@/lib/types";
 import { Loader2Icon, XIcon } from "lucide-react";
 import { Button } from "../ui/button";
 
 export const PreviewAttachment = ({
+  className,
   attachment,
   isUploading = false,
   onRemove,
 }: {
+  className?: string;
   attachment: Attachment;
   isUploading?: boolean;
   onRemove?: () => void;
@@ -16,7 +19,7 @@ export const PreviewAttachment = ({
 
   return (
     <div
-      className="group relative size-16 overflow-hidden rounded-lg border bg-muted"
+      className={cn("group relative size-16 overflow-hidden rounded-lg border bg-muted", className)}
       data-testid="input-attachment-preview"
     >
       {mediaType.startsWith("image") ? (
@@ -42,7 +45,7 @@ export const PreviewAttachment = ({
         </div>
       )}
 
-      {!isUploading && (
+      {!isUploading && onRemove && (
         <Button
           className="absolute top-0.5 right-0.5 size-4 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
           onClick={onRemove}

@@ -2,7 +2,11 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import * as schema from "../db/auth-schema";
+import { getRedisClient } from "../redis";
 import { db } from "@/lib/db";
+
+const redis = getRedisClient();
+await redis.connect();
 
 export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
@@ -25,6 +29,19 @@ export const auth = betterAuth({
             enabled: true,
             maxAge: 60 * 60,
         },
+    },
+
+    secondaryStorage: {
+        get: async (key) => {
+            return await redis.get(key);
+        },
+        set: async (key, value, ttl) => {
+            if (ttl) await redis.set(key, value, { expiration: { type: 'EX', value: ttl } });
+            else await redis.set(key, value);
+        },
+        delete: async (key) => {
+            await redis.del(key);
+        }
     },
 
     plugins: [nextCookies()],

@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import { useState } from "react"
 import { Input } from "./ui/input"
 import { Button } from "./ui/button"
-import type { User } from "better-auth"
+import { User } from "better-auth"
 import { usePathname, useRouter } from "next/navigation"
 import { unstable_serialize } from "swr/infinite"
 import { getChatHistoryPaginationKey, SidebarHistory } from "./sidebar-history"
@@ -32,15 +32,6 @@ export function AppSidebar({ user }: { user?: User }) {
   const pathname = usePathname();
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  const handleNewChat = () => {
-    if (pathname === "/") {
-      router.refresh();
-      return;
-    }
-
-    router.back();
-  };
 
   const handleDialogOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -83,7 +74,7 @@ export function AppSidebar({ user }: { user?: User }) {
           Chat
         </Link>
         <Button
-          onClick={handleNewChat}
+          onClick={() => router.push("/")}
           className="w-full"
         >
           New Chat

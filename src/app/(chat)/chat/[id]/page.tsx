@@ -6,24 +6,20 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const [{ id }, headerlist] = await Promise.all([params, headers()]);
   const chat = await getChatById({ id });
 
   if (!chat) {
     return notFound();
   }
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await auth.api.getSession({ headers: headerlist });
 
   if (chat.visibility === "private" && session?.user.id !== chat.userId) {
     return notFound();
   }
 
-  const messagesFromDb = await getMessagesByChatId({
-    id,
-  });
+  const messagesFromDb = await getMessagesByChatId({ id });
 
   return (
     <Chat
@@ -34,7 +30,7 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
         parts: message.parts as UIMessagePart<UIDataTypes, UITools>[],
         createdAt: message.createdAt,
       }))}
-      isReadonly={false}
+      isReadonly={session?.user.id !== chat.userId}
     />
   );
 }

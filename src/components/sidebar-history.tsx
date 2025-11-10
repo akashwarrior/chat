@@ -206,7 +206,7 @@ function HistorySkeleton() {
                     key={width}
                 >
                     <div
-                        className="flex-1 rounded-md bg-sidebar-accent-foreground/10"
+                        className="flex-1 rounded-md bg-sidebar-accent-foreground/10 h-5"
                         style={{ maxWidth: `${width}%` }}
                     />
                 </div>
