@@ -86,6 +86,9 @@ importers:
       redis:
         specifier: ^5.9.0
         version: 5.9.0
+      resumable-stream:
+        specifier: ^2.2.8
+        version: 2.2.8
       shiki:
         specifier: ^3.15.0
         version: 3.15.0
@@ -3724,6 +3727,9 @@ packages:
   resolve@2.0.0-next.5:
     resolution: {integrity: sha512-U7WjGVG9sH8tvjW5SmGbQuui75FiyjAX72HX15DwBBwF9dNiQZRQAg9nnPhYy+TUnE0+VcrttuvNI8oSxZcocA==}
     hasBin: true
+
+  resumable-stream@2.2.8:
+    resolution: {integrity: sha512-F9+SLKw/a/p7hRjy2CNwzT66UIlY7aY4D3Sg9xwuZMA7nxVQrVPXCWU27qIGcO4jlauL0T3XkCN2218qi6ugTw==}
 
   retry@0.13.1:
     resolution: {integrity: sha512-XQBQ3I8W1Cge0Seh+6gjj03LbmRFWuoszgK9ooCpwYIrhhoO80pfq4cUkU5DkknwfOfFteRwlZ56PYOGYyFWdg==}
@@ -8199,6 +8205,8 @@ snapshots:
       is-core-module: 2.16.1
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
+
+  resumable-stream@2.2.8: {}
 
   retry@0.13.1: {}
 

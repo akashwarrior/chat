@@ -29,7 +29,13 @@ export function Chat({ id, initialMessages, isReadonly }: ChatProps) {
         () =>
             new AiChat({
                 id: chatId,
-                transport: new DefaultChatTransport({ api: "/api/chat" }),
+                generateId: () => crypto.randomUUID(),
+                transport: new DefaultChatTransport({
+                    api: "/api/chat",
+                    prepareReconnectToStreamRequest: ({ id }) => {
+                        return { api: `/api/chat/${id}/stream` }
+                    }
+                }),
             }),
         [chatId]
     );

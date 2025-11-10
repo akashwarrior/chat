@@ -1,6 +1,9 @@
 import { auth } from "@/lib/auth/auth";
 import { google } from "@ai-sdk/google";
 import { DEFAULT_MODEL, getModelConfig } from "@/ai/config";
+import { after } from 'next/server';
+import { getRedisClient, setKey } from "@/lib/redis";
+import { createResumableStreamContext } from 'resumable-stream';
 import {
     saveChat,
     getChatById,
@@ -15,8 +18,7 @@ import {
     generateText,
     smoothStream,
     convertToModelMessages,
-    createUIMessageStream,
-    createUIMessageStreamResponse,
+    generateId,
 } from "ai";
 
 export async function POST(request: Request) {
@@ -28,14 +30,13 @@ export async function POST(request: Request) {
         const chat = await getChatById({ id });
 
         const modelMessages = convertToModelMessages(messages);
-        const promises: Promise<unknown>[] = [];
 
         if (chat) {
             if (chat.userId !== userId) {
                 return new Response("Forbidden", { status: 403 });
             }
         } else {
-            promises.push(generateText({
+            const { text } = await generateText({
                 ...getModelConfig(modelId),
                 system: `
     - you will generate a short title based on the first message a user begins a conversation with
@@ -43,60 +44,70 @@ export async function POST(request: Request) {
     - the title should be a summary of the user's message
     - do not use quotes or colons`,
                 messages: modelMessages,
-            }).then(({ text }) => {
-                return saveChat({
-                    id,
-                    userId,
-                    title: text,
-                });
-            }));
+            });
+            await saveChat({
+                id,
+                userId,
+                title: text,
+            });
         };
 
-        return createUIMessageStreamResponse({
-            stream: createUIMessageStream({
-                execute: ({ writer }) => {
-                    const result = streamText({
-                        ...getModelConfig(modelId),
-                        messages: modelMessages,
-                        experimental_transform: smoothStream({ chunking: "word" }),
-                        topP: 0.1,
-                        tools: {
-                            google_search: google.tools.googleSearch({}),
-                            url_context: google.tools.urlContext({}),
-                            code_execution: google.tools.codeExecution({}),
-                        },
-                    })
-
-                    result.consumeStream();
-                    writer.merge(
-                        result.toUIMessageStream({
-                            sendReasoning: true,
-                            sendSources: true,
-                        })
-                    );
-                },
-                onFinish: async ({ messages: assistantMessages }) => {
-                    const lastMessage = messages[messages.length - 1];
-                    const messagesToSave = [lastMessage, ...assistantMessages];
-                    if (trigger === "regenerate-message") {
-                        const [message] = await getMessageById({ id: lastMessage.id });
-                        promises.push(deleteMessagesByChatIdAfterTimestamp({
-                            chatId: id,
-                            timestamp: message.createdAt,
-                        }))
-                    }
-                    await Promise.all(promises);
-                    await saveMessages({
-                        messages: messagesToSave.map((message) => ({
-                            ...message,
-                            chatId: id,
-                            attachments: [],
-                            createdAt: new Date(),
-                        })),
-                    });
-                },
+        const lastMessage = messages[messages.length - 1];
+        const messagesToSave = [lastMessage];
+        if (trigger === "regenerate-message") {
+            const [message] = await getMessageById({ id: lastMessage.id });
+            await deleteMessagesByChatIdAfterTimestamp({
+                chatId: id,
+                timestamp: message.createdAt,
             })
+        }
+        await saveMessages({
+            messages: messagesToSave.map((message) => ({
+                ...message,
+                chatId: id,
+                attachments: [],
+                createdAt: new Date(),
+            })),
+        });
+
+        const result = streamText({
+            ...getModelConfig(modelId),
+            messages: modelMessages,
+            experimental_transform: smoothStream({ chunking: "word" }),
+            topP: 0.1,
+            tools: {
+                google_search: google.tools.googleSearch({}),
+                url_context: google.tools.urlContext({}),
+                code_execution: google.tools.codeExecution({}),
+            },
         })
+
+        return result.toUIMessageStreamResponse({
+            generateMessageId: () => crypto.randomUUID(),
+            onFinish: async ({ messages: assistantMessages }) => {
+                await saveMessages({
+                    messages: assistantMessages.map((message) => ({
+                        ...message,
+                        chatId: id,
+                        attachments: [],
+                        createdAt: new Date(),
+                    })),
+                });
+            },
+            async consumeSseStream({ stream }) {
+                const streamId = generateId();
+                const redisClientPublisher = getRedisClient();
+                const redisClientSubscriber = getRedisClient();
+                await Promise.all([redisClientPublisher.connect(), redisClientSubscriber.connect()]);
+                const streamContext = createResumableStreamContext({
+                    waitUntil: after,
+                    publisher: redisClientPublisher,
+                    subscriber: redisClientSubscriber,
+                });
+                await streamContext.createNewResumableStream(streamId, () => stream);
+                await setKey({ key: id, value: streamId, ttl: 60 * 5 });
+            },
+        });
     } catch (error) {
         console.error("Unhandled error in chat API:", error);
         return new Response("Oops, an error occurred!", { status: 500 });
