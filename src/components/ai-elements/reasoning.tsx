@@ -113,11 +113,11 @@ export const Reasoning = memo(
 
 export type ReasoningTriggerProps = ComponentProps<typeof CollapsibleTrigger>;
 
-const getThinkingMessage = (isStreaming: boolean, duration?: number) => {
-  if (isStreaming || duration === 0) {
+const getThinkingMessage = (isStreaming: boolean, duration: number) => {
+  if (isStreaming) {
     return <Shimmer duration={1}>Thinking...</Shimmer>;
   }
-  if (duration === undefined) {
+  if (!duration) {
     return <p>Thought for a few seconds</p>;
   }
   return <p>Thought for {duration} seconds</p>;

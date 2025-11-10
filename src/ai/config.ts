@@ -32,7 +32,7 @@ export function getAvailableModels() {
 
 export function getModelConfig(modelId = DEFAULT_MODEL) {
     return {
-        model: google(modelId),
+        model: google(getAvailableModels().find(model => model.id === modelId)?.id || DEFAULT_MODEL),
         providerOptions: {
             google: {
                 thinkingConfig: {

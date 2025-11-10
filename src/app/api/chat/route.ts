@@ -4,7 +4,7 @@ import { DEFAULT_MODEL, getModelConfig } from "@/ai/config";
 import {
     saveChat,
     getChatById,
-    saveMessage,
+    saveMessages,
     getMessageById,
     deleteChatById,
     deleteMessagesByChatIdAfterTimestamp,
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
                         }))
                     }
                     await Promise.all(promises);
-                    await saveMessage({
+                    await saveMessages({
                         messages: messagesToSave.map((message) => ({
                             ...message,
                             chatId: id,

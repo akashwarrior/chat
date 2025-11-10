@@ -26,7 +26,7 @@ export default function Header() {
 
 
     return (
-        <div className="relative w-full">
+        <div className="fixed w-full z-50">
             <div className={cn(
                 "h-0 bg-sidebar w-full transition-[height] duration-150 hidden md:flex",
                 isSidebarOpen && "h-3"

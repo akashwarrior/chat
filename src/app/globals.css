@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 
 /* Streamdown CSS */
-@source "@/../node_modules/streamdown/dist/index.js";
+@source "../../node_modules/streamdown/dist/index.js";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -122,5 +122,24 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer base {
+  ::selection {
+    @apply bg-foreground text-background;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary rounded-full;
   }
 }

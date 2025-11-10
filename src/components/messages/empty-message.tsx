@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Book, Code, Globe, Sparkles } from "lucide-react";
@@ -13,7 +14,13 @@ export default function EmptyMessage() {
     const userName = session?.user?.name;
 
     return !input && (
-        <div className="w-full flex flex-col gap-8 sm:gap-6 flex-1 justify-center overflow-y-auto [&::-webkit-scrollbar]:hidden pt-20">
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3, damping: 10 }}
+            className="w-full flex flex-col gap-8 sm:gap-6 flex-1 justify-center pt-20"
+        >
             <h1 className="text-3xl font-bold">
                 How can I help you{userName ? `, ${userName.split(" ")[0]}` : ""}?
             </h1>
@@ -82,7 +89,7 @@ export default function EmptyMessage() {
                 />
 
             </Tabs>
-        </div>
+        </motion.div>
     );
 }
 

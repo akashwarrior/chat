@@ -1,140 +1,134 @@
-import { cn } from "@/lib/utils";
-import { Response } from "../ai-elements/response";
-import { MessageActions } from "./message-actions";
-import type { UIMessage, UseChatHelpers } from "@ai-sdk/react";
-import { Reasoning, ReasoningContent, ReasoningTrigger } from "../ai-elements/reasoning";
-import { useState } from "react";
-import { Textarea } from "../ui/textarea";
-import { Button } from "../ui/button";
-import EmptyMessage from "./empty-message";
-import { PreviewAttachment } from "./preview-attachment";
+'use client'
 
-interface MessagesProps {
+import { toast } from "sonner"
+import { useState } from "react"
+import type { UIMessage } from "@ai-sdk/react"
+import { UIDataTypes, UIMessagePart, UITools } from "ai"
+import EmptyMessage from "./empty-message"
+import { MessageActions } from "./message-actions"
+import { MessagePart } from "./message-part"
+
+type MessagesProps = {
     isLoading: boolean;
-    messages: UseChatHelpers<UIMessage>['messages'];
-    regenerate: (messageId: string) => void;
-    setMessages: UseChatHelpers<UIMessage>['setMessages'];
     isReadonly: boolean;
-    setInput: (input: string) => void;
+    messages: UIMessage[];
+    regenerate: (messageId: string) => void;
+    setMessages: (messages: UIMessage[]) => void;
 };
 
-export function Messages({ messages, isLoading, regenerate, setMessages, isReadonly, setInput }: MessagesProps) {
-    const [editableMessageId, setEditableMessageId] = useState<string | null>(null);
-    const [editableMessageValue, setEditableMessageValue] = useState<string>("");
+export function Messages({
+    isLoading,
+    isReadonly,
+    messages,
+    regenerate,
+    setMessages,
+}: MessagesProps) {
+    const [messageBeingEdited, setMessageBeingEdited] = useState<string | null>(
+        null
+    );
 
-    const handleEditableFocus = (messageId: string, value: string) => {
-        setEditableMessageId(messageId);
-        setEditableMessageValue(value);
+    if (messages.length === 0) {
+        return <EmptyMessage />;
     }
 
-    const handleEditableChange = () => {
-        if (!editableMessageId) return;
-        setMessages((prev) => prev.map((message) => message.id === editableMessageId ? { ...message, parts: message.parts?.map((part) => part.type === 'text' ? { ...part, text: editableMessageValue } : part) } : message));
-        setEditableMessageId(null);
-        setEditableMessageValue("");
-        regenerate(editableMessageId);
-    }
-
-    const handleEditableBlur = () => {
-        setEditableMessageId(null);
-    }
-
-    const handleEditableKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleEditableChange();
+    const handleEditStart = (messageId: string) => {
+        if (isReadonly) {
+            return;
         }
-    }
 
-    return messages.length > 0 ? messages.map((message) => (
-        <div
-            key={`message-${message.id}`}
-            className="group/message z-10!"
-        >
-            {message.parts?.map((part, index) => {
+        setMessageBeingEdited(messageId);
+    };
 
-                if (part.type === 'file') {
-                    return (
-                        <PreviewAttachment
-                            key={`${message.id}-file-part-${index}`}
-                            attachment={{
-                                name: part.filename || "",
-                                ...part,
-                            }}
+    const handleEditCancel = () => setMessageBeingEdited(null);
+
+    const handleEditSubmit = (updatedText: string) => {
+        if (!messageBeingEdited) {
+            return;
+        }
+
+        setMessages(
+            messages.map((message) =>
+                message.id === messageBeingEdited
+                    ? {
+                        ...message,
+                        parts: message.parts?.map((part) =>
+                            part.type === "text" ? { ...part, text: updatedText } : part
+                        ),
+                    }
+                    : message
+            )
+        );
+
+        regenerate(messageBeingEdited);
+        setMessageBeingEdited(null);
+    };
+
+    const handleEditKeyDown = (
+        event: React.KeyboardEvent<HTMLTextAreaElement>
+    ) => {
+        if (event.key !== "Enter" || event.shiftKey) {
+            return;
+        }
+
+        event.preventDefault();
+        handleEditSubmit(event.currentTarget.value);
+    };
+
+    const handleCopy = async (
+        parts: UIMessagePart<UIDataTypes, UITools>[] = []
+    ) => {
+        const textToCopy = parts
+            .filter((part) => part.type === "text")
+            .map((part) => part.text)
+            .join("\n")
+            .trim();
+
+        if (!textToCopy) {
+            toast.error("There's no text to copy!");
+            return;
+        }
+
+        await navigator.clipboard.writeText(textToCopy);
+        toast.success("Copied to clipboard!", { closeButton: false });
+    };
+
+    return (
+        <div className="flex flex-col gap-2">
+            {messages.map((message, index) => {
+                const isLastMessage = index === messages.length - 1;
+                const isStreaming = isLastMessage && isLoading;
+                const isEditing = messageBeingEdited === message.id;
+                const isUserMessage = message.role === "user";
+                const onRegenerate = !isUserMessage ? () => regenerate(message.id) : undefined;
+                const onEdit = isUserMessage && !isReadonly ? () => handleEditStart(message.id) : undefined;
+
+                return (
+                    <article
+                        key={message.id}
+                        className="group/message space-y-2"
+                        data-testid="chat-message"
+                    >
+                        <MessagePart
+                            editing={isEditing}
+                            handleEditableBlur={handleEditCancel}
+                            handleEditableChange={handleEditSubmit}
+                            handleEditableKeyDown={handleEditKeyDown}
+                            isLoading={isStreaming}
+                            message={message}
                         />
-                    )
-                }
 
-                if (part.type === 'reasoning') {
-                    return (
-                        <Reasoning
-                            key={`${message.id}-reasoning-part-${index}`}
-                            isStreaming={isLoading && index === message.parts.length - 1}
-                            className="w-full"
-                        >
-                            <ReasoningTrigger />
-                            <ReasoningContent>{part.text}</ReasoningContent>
-                        </Reasoning>
-                    )
-                }
-
-                if (part.type === "text") {
-                    return (
-                        <div key={`${message.id}-text-part-${index}`}
-                            className={cn(
-                                "overflow-hidden rounded-2xl px-3 py-2 text-sm w-fit wrap-break-word z-10!",
-                                editableMessageId !== message.id && message.role === "user" && "bg-primary text-primary-foreground",
-                                message.role === "user" && "ml-auto"
-                            )}
-                        >
-                            {editableMessageId === message.id ? (
-                                <>
-                                    <Textarea
-                                        autoFocus
-                                        value={editableMessageValue}
-                                        onChange={(e) => setEditableMessageValue(e.target.value)}
-                                        onKeyDown={handleEditableKeyDown}
-                                        className="rounded-2xl px-3 py-2 text-sm w-fit ml-auto mb-2 h-fit min-h-0 resize-none field-sizing-content"
-                                        rows={1}
-                                    />
-                                    <div className="flex flex-row justify-end gap-2">
-                                        <Button
-                                            className="h-fit px-3 py-2"
-                                            onClick={handleEditableBlur}
-                                            variant="outline"
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            className="h-fit px-3 py-2"
-                                            data-testid="message-editor-send-button"
-                                            disabled={isLoading}
-                                            onClick={handleEditableChange}
-                                            variant="default"
-                                        >
-                                            {isLoading ? "Sending..." : "Send"}
-                                        </Button>
-                                    </div>
-                                </>
-                            ) : (
-                                <Response className="z-10!">
-                                    {part.text}
-                                </Response>
-                            )}
-                        </div>
-                    )
-                }
+                        {!isStreaming && (
+                            <MessageActions
+                                handleCopy={() => handleCopy(message.parts)}
+                                isUser={isUserMessage}
+                                regenerate={onRegenerate}
+                                setEdit={onEdit}
+                                sources={message.parts.filter((part) => part.type === 'source-url').map((part) => part)}
+                            />
+                        )}
+                    </article>
+                );
             })}
-
-            <MessageActions
-                key={`action-${message.id}`}
-                isLoading={isLoading && message.id === messages.at(-1)?.id}
-                message={message}
-                setMode={() => handleEditableFocus(message.id, message.parts?.find((part) => part.type === 'text')?.text || "")}
-                regenerate={() => regenerate(message.id)}
-            />
         </div>
-    )) : (
-        <EmptyMessage />
-    )
+    );
 }

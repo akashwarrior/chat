@@ -1,54 +1,34 @@
 'use client'
 
-import { toast } from "sonner";
-import type { UIMessage } from "@ai-sdk/react";
-import { CopyIcon, PencilIcon, RotateCcwIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
+import { CopyIcon, PencilIcon, RotateCcwIcon } from "lucide-react";
+import { Source, Sources, SourcesContent, SourcesTrigger } from "../ai-elements/sources";
 
 export function MessageActions({
-  message,
-  isLoading,
-  setMode,
+  isUser,
+  setEdit,
+  handleCopy,
   regenerate,
+  sources,
 }: {
-  message: UIMessage;
-  isLoading: boolean;
-  setMode?: () => void;
+  isUser: boolean;
+  setEdit?: () => void;
+  handleCopy: () => Promise<void>
   regenerate?: () => void;
+  sources?: { sourceId: string, title?: string, url: string }[];
 }) {
-  if (isLoading) {
-    return null;
-  }
-
-  const textFromParts = message.parts
-    ?.filter((part) => part.type === "text")
-    .map((part) => part.text)
-    .join("\n")
-    .trim();
-
-  const handleCopy = async () => {
-    if (!textFromParts) {
-      toast.error("There's no text to copy!");
-      return;
-    }
-
-    await navigator.clipboard.writeText(textFromParts);
-    toast.success("Copied to clipboard!", {
-      closeButton: false
-    });
-  };
-
-  const isUser = message.role === 'user';
-
-
   return (
-    <div className={isUser ? "flex items-center gap-1 -mr-0.5 justify-end" : "-ml-0.5"}>
-      {isUser && setMode && (
+    <div className={cn("flex items-start gap-1",
+      isUser ? "-mr-0.5 justify-end" : "-ml-0.5"
+    )}>
+
+      {isUser && setEdit && (
         <Button
           size="icon-sm"
           variant="ghost"
           className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover/message:opacity-100"
-          onClick={setMode}
+          onClick={setEdit}
         >
           <PencilIcon />
         </Button>
@@ -62,15 +42,27 @@ export function MessageActions({
         <CopyIcon />
       </Button>
 
-      {!isUser && setMode && (
+      {!isUser && regenerate && (
         <Button
           size="icon-sm"
           variant="ghost"
-          className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover/message:opacity-100"
           onClick={regenerate}
         >
           <RotateCcwIcon />
         </Button>
+      )}
+
+      {sources && sources.length > 0 && (
+        <Sources className="w-fit m-0! inline-flex flex-col center relative">
+          <SourcesTrigger
+            className="hover:bg-accent px-3 py-1.5 rounded-full"
+          />
+          <SourcesContent>
+            {sources.map((source) => (
+              <Source href={source.url} key={source.sourceId} title={source.title} />
+            ))}
+          </SourcesContent>
+        </Sources>
       )}
     </div>
   );
