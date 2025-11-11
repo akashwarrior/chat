@@ -71,7 +71,7 @@ export function MessagePart({
           <div
             key={key}
             className={cn(
-              "w-fit overflow-hidden rounded-2xl px-3 py-2 text-sm wrap-break-word",
+              "w-fit overflow-hidden rounded-2xl p-2 text-sm",
               message.role === "user" && "ml-auto",
               !editing &&
               message.role === "user" &&

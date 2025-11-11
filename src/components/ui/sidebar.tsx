@@ -124,7 +124,7 @@ function Sidebar({ children }: { children?: React.ReactNode }) {
       <div
         data-slot="sidebar-container"
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-100 ease-linear md:flex",
+          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,width] duration-100 ease-linear md:flex",
           "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]",
           "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
         )}

@@ -81,9 +81,9 @@ export function Chat({ id, initialMessages, isReadonly }: ChatProps) {
     };
 
     return (
-        <div className="flex w-full max-h-screen min-h-full flex-col bg-background">
+        <div className="flex w-full max-h-screen min-h-full flex-col bg-background relative rounded-tl-2xl overflow-hidden">
             <Conversation>
-                <ConversationContent className="overflow-x-hidden py-14 md:py-10 min-h-full">
+                <ConversationContent className="overflow-x-hidden pt-16 md:pt-12 pb-44 min-h-full">
                     <Messages
                         isReadonly={isReadonly}
                         messages={messages}
@@ -96,11 +96,13 @@ export function Chat({ id, initialMessages, isReadonly }: ChatProps) {
             </Conversation>
 
             {!isReadonly && (
-                <ChatInput
-                    isLoading={isLoading}
-                    stop={stop}
-                    submit={handleSubmit}
-                />
+                <div className="px-4 absolute bottom-0 left-0 right-0">
+                    <ChatInput
+                        isLoading={isLoading}
+                        stop={stop}
+                        submit={handleSubmit}
+                    />
+                </div>
             )}
         </div>
     );

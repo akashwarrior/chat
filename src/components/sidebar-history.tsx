@@ -170,6 +170,7 @@ function ThreadButton({ title, href, selected, onDelete }: ThreadButtonProps) {
     return (
         <Link
             href={href}
+            prefetch={false}
             className={cn(
                 "group/thread flex w-full items-center justify-between overflow-hidden",
                 buttonVariants({

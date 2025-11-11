@@ -133,7 +133,7 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
 
     return (
         <form
-            className="mx-auto mb-1 w-full max-w-3xl space-y-2 rounded-xl border bg-accent/90 py-2"
+            className="mx-auto w-full max-w-3xl space-y-2 rounded-xl border bg-accent/90 py-2"
             onSubmit={handleFormSubmit}
         >
             {(attachments.length > 0 || uploadQueue.length > 0) && (

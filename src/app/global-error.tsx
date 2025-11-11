@@ -31,7 +31,7 @@ export default function Error({
             Try again
           </Button>
 
-          <Link href="/">
+          <Link href="/" prefetch={false}>
             <Button variant="outline" className="flex items-center gap-2 w-full">
               <Home className="h-4 w-4" />
               Go home

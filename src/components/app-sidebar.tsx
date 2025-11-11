@@ -70,7 +70,7 @@ export function AppSidebar({ user }: { user?: User }) {
   return (
     <Sidebar>
       <SidebarHeader className="p-3.5 gap-4 flex flex-col items-center">
-        <Link href="/" className="text-xl font-bold">
+        <Link href="/" className="text-xl font-bold" prefetch={false}>
           Chat
         </Link>
         <Button
@@ -103,7 +103,7 @@ export function AppSidebar({ user }: { user?: User }) {
 
       <SidebarFooter>
         {user ? (
-          <Link href="/settings/account" className="w-full">
+          <Link href="/settings/account" className="w-full" prefetch={false}>
             <Button
               variant="ghost"
               className="w-full justify-start items-center gap-3 py-7"
@@ -122,7 +122,7 @@ export function AppSidebar({ user }: { user?: User }) {
             </Button>
           </Link>
         ) : (
-          <Link href="/auth" className="w-full">
+          <Link href="/auth" className="w-full" prefetch={false}>
             <Button
               variant="ghost"
               className="w-full justify-start items-center gap-5 py-6 px-5"

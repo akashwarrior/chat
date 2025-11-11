@@ -7,6 +7,7 @@ import { Search, Settings2 } from "lucide-react";
 import ThemeToggle from "@/components/theme-toggle";
 import SearchModal from "./search-modal";
 import { SidebarTrigger, useSidebar } from "./ui/sidebar";
+import Link from "next/link";
 
 export default function Header() {
     const { open: isSidebarOpen } = useSidebar();
@@ -26,9 +27,9 @@ export default function Header() {
 
 
     return (
-        <div className="fixed w-full z-50">
+        <div className="w-full">
             <div className={cn(
-                "h-0 bg-sidebar w-full transition-[height] duration-150 hidden md:flex",
+                "h-0 bg-sidebar w-full transition-[height] duration-100 hidden md:flex",
                 isSidebarOpen && "h-3"
             )} />
 
@@ -48,7 +49,7 @@ export default function Header() {
             </div>
 
             <div className={cn(
-                "absolute top-0 right-0 z-10 h-13 w-28 transition-all duration-150 overflow-hidden text-sidebar -translate-y-full hidden md:block",
+                "absolute top-0 right-0 z-10 h-13 w-28 transition-all duration-100 overflow-hidden text-sidebar -translate-y-full hidden md:block",
                 isSidebarOpen && "translate-y-0"
             )}>
                 <svg className="skew-x-30 h-full" viewBox="0 0 128 32" fill="currentColor">
@@ -61,13 +62,15 @@ export default function Header() {
                 "absolute right-1.5 top-1.5 p-1 flex items-center rounded-md z-20 backdrop-blur-sm bg-sidebar/60",
                 isSidebarOpen && "md:rounded-full"
             )}>
-                <Button
-                    size="icon"
-                    variant="ghost"
-                    className="hidden sm:flex"
-                >
-                    <Settings2 />
-                </Button>
+                <Link href="/settings/account" prefetch={false}>
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        className="hidden sm:flex"
+                    >
+                        <Settings2 />
+                    </Button>
+                </Link>
                 <ThemeToggle />
             </div>
 
