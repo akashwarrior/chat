@@ -81,7 +81,7 @@ export function Chat({ id, initialMessages, isReadonly }: ChatProps) {
     };
 
     return (
-        <div className="flex w-full max-h-screen min-h-full flex-col bg-background relative rounded-tl-2xl overflow-hidden">
+        <div className="flex w-full max-h-screen min-h-full flex-col bg-background relative overflow-hidden">
             <Conversation>
                 <ConversationContent className="overflow-x-hidden pt-16 md:pt-12 pb-44 min-h-full">
                     <Messages

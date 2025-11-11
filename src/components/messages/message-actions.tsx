@@ -56,6 +56,7 @@ export function MessageActions({
         <Sources className="w-fit m-0! inline-flex flex-col center relative">
           <SourcesTrigger
             className="hover:bg-accent px-3 py-1.5 rounded-full"
+            totalSources={sources.length}
           />
           <SourcesContent>
             {sources.map((source) => (

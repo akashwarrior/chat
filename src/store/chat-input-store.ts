@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface ChatInputStore {
     input: string;
@@ -6,8 +7,13 @@ interface ChatInputStore {
 }
 
 export const useChatInputStore = create<ChatInputStore>()(
-    (set) => ({
-        input: "",
-        setInput: (input) => set({ input }),
-    }),
+    persist(
+        (set) => ({
+            input: "",
+            setInput: (input) => set({ input }),
+        }),
+        {
+            name: 'chat-input',
+        }
+    )
 );

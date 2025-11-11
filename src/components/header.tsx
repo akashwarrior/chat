@@ -29,7 +29,7 @@ export default function Header() {
     return (
         <div className="w-full">
             <div className={cn(
-                "h-0 bg-sidebar w-full transition-[height] duration-100 hidden md:flex",
+                "fixed top-0 left-0 right-0 z-10 h-0 bg-sidebar w-full transition-[height] duration-100 hidden md:flex",
                 isSidebarOpen && "h-3"
             )} />
 
@@ -62,7 +62,7 @@ export default function Header() {
                 "absolute right-1.5 top-1.5 p-1 flex items-center rounded-md z-20 backdrop-blur-sm bg-sidebar/60",
                 isSidebarOpen && "md:rounded-full"
             )}>
-                <Link href="/settings/account" prefetch={false}>
+                <Link href="/settings" prefetch={false}>
                     <Button
                         size="icon"
                         variant="ghost"

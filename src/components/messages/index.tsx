@@ -123,7 +123,7 @@ export function Messages({
                                 isUser={isUserMessage}
                                 regenerate={onRegenerate}
                                 setEdit={onEdit}
-                                sources={message.parts.filter((part) => part.type === 'source-url').map((part) => part)}
+                                sources={message.parts.filter((part) => part.type === 'source-url')}
                             />
                         )}
                     </article>

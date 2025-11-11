@@ -2,15 +2,16 @@
 
 import { useEffect, useRef, useState } from "react"
 import type { UIMessage } from "@ai-sdk/react"
+import { motion } from "motion/react"
+import { toast } from "sonner"
 import { DEFAULT_MODEL, getAvailableModels } from "@/ai/config"
 import { useChatInputStore } from "@/store/chat-input-store"
 import { Attachment } from "@/lib/types"
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
+import { PreviewAttachment } from "./messages/preview-attachment"
 import { Button } from "./ui/button"
 import { Textarea } from "./ui/textarea"
-import { PreviewAttachment } from "./messages/preview-attachment"
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
-import { ArrowUpIcon, ChevronDownIcon, CpuIcon, PaperclipIcon, StopCircleIcon } from "lucide-react"
-import { toast } from "sonner"
+import { ArrowUpIcon, PaperclipIcon, StopCircleIcon } from "lucide-react"
 
 type ChatInputProps = {
     isLoading: boolean;
@@ -18,18 +19,49 @@ type ChatInputProps = {
     submit: (message: Omit<UIMessage, "id">, modelId: string) => Promise<void>;
 };
 
+type UploadResult = Attachment | null;
+
 const UPLOAD_PREVIEW_DELAY_MS = 2000;
-const models = getAvailableModels();
+const MODELS = getAvailableModels();
+
+const animatedItemProps = {
+    initial: {
+        opacity: 0,
+        y: 10,
+        scale: 0.95,
+    },
+    animate: {
+        opacity: 1,
+        x: 0,
+        y: 0,
+        scale: 1,
+    },
+    exit: {
+        opacity: 0,
+        y: 10,
+        scale: 0.95,
+    },
+    transition: {
+        duration: 0.2,
+        ease: "easeInOut",
+        type: "spring",
+        bounce: 0,
+        stiffness: 100,
+    },
+} as const;
 
 export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
     const { input, setInput } = useChatInputStore();
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const [uploadQueue, setUploadQueue] = useState<string[]>([]);
-    const [selectedModelId, setSelectedModelId] = useState<string>(DEFAULT_MODEL);
+    const [selectedModelId, setSelectedModelId] = useState<typeof DEFAULT_MODEL | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
+        if (!selectedModelId) {
+            setSelectedModelId(DEFAULT_MODEL);
+        }
         textareaRef.current?.focus();
     }, [input]);
 
@@ -37,12 +69,13 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
         setAttachments((current) =>
             current.filter((attachment) => attachment.url !== attachmentUrl)
         );
+
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
     };
 
-    const buildMessage = (): Omit<UIMessage, "id"> => ({
+    const buildMessagePayload = (): Omit<UIMessage, "id"> => ({
         role: "user",
         parts: [
             ...attachments.map((attachment) => ({
@@ -70,12 +103,12 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
             return;
         }
 
-        const message = buildMessage();
+        const message = buildMessagePayload();
 
         setAttachments([]);
         setInput("");
 
-        await submit(message, selectedModelId);
+        await submit(message, selectedModelId ?? DEFAULT_MODEL);
     };
 
     const handleTextareaKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (event) => {
@@ -87,7 +120,7 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
         event.currentTarget.form?.requestSubmit();
     };
 
-    const uploadFile = async (file: File) => {
+    const uploadFile = async (file: File): Promise<UploadResult> => {
         const formData = new FormData();
         formData.append("file", file);
 
@@ -97,21 +130,23 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
                 body: formData,
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                return {
-                    ...data,
-                } as Attachment;
+            if (!response.ok) {
+                const errorResponse = await response.json().catch(() => null);
+                toast.error(errorResponse?.error ?? "Failed to upload file, please try again.");
+                return null;
             }
-            const { error } = await response.json();
-            toast.error(error);
-        } catch (_error) {
-            toast.error("Failed to upload file, please try again!");
+
+            const data = await response.json();
+            return data as Attachment;
+        } catch {
+            toast.error("Failed to upload file, please try again.");
+            return null;
         }
-    }
+    };
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(event.target.files ?? []);
+
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
@@ -119,9 +154,13 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
         if (files.length === 0) {
             return;
         }
+
         setUploadQueue(files.map((file) => file.name));
+
         try {
-            const uploadedAttachments = (await Promise.all(files.map(uploadFile))).filter(attachment => !!attachment);
+            const uploads = await Promise.all(files.map(uploadFile));
+            const uploadedAttachments = uploads.filter((attachment): attachment is Attachment => Boolean(attachment));
+
             if (uploadedAttachments.length > 0) {
                 await new Promise((resolve) => setTimeout(resolve, UPLOAD_PREVIEW_DELAY_MS));
                 setAttachments((current) => [...current, ...uploadedAttachments]);
@@ -131,12 +170,15 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
         }
     };
 
+    const currentModel = MODELS.find((model) => model.id === selectedModelId);
+    const showAttachments = attachments.length > 0 || uploadQueue.length > 0;
+
     return (
         <form
             className="mx-auto w-full max-w-3xl space-y-2 rounded-xl border bg-accent/90 py-2"
             onSubmit={handleFormSubmit}
         >
-            {(attachments.length > 0 || uploadQueue.length > 0) && (
+            {showAttachments && (
                 <div className="flex items-end gap-2 overflow-x-auto">
                     {attachments.map((attachment) => (
                         <PreviewAttachment
@@ -178,55 +220,63 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
                 />
 
                 <div className="flex items-center gap-1">
-                    <Button
-                        onClick={() => fileInputRef.current?.click()}
-                        size="icon-sm"
-                        type="button"
-                        variant="outline"
-                    >
-                        <PaperclipIcon className="size-4" />
-                    </Button>
+                    <motion.div {...animatedItemProps}>
+                        <Button
+                            onClick={() => fileInputRef.current?.click()}
+                            size="icon-sm"
+                            type="button"
+                            variant="outline"
+                        >
+                            <PaperclipIcon className="size-4" />
+                        </Button>
+                    </motion.div>
 
-                    <Select
-                        defaultValue={selectedModelId}
-                        onValueChange={setSelectedModelId}
-                    >
-                        <SelectTrigger asChild className="bg-background">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="h-8!"
+                    {currentModel && (
+                        <motion.div {...animatedItemProps}>
+                            <Select
+                                defaultValue={currentModel.id}
+                                onValueChange={(value) => setSelectedModelId(value as typeof MODELS[number]["id"])}
                             >
-                                <CpuIcon />
-                                <span className="hidden text-xs font-medium sm:block">
-                                    {models.find((model) => model.id === selectedModelId)?.name}
-                                </span>
-                                <ChevronDownIcon />
-                            </Button>
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[260px] p-0">
-                            {models.map((model) => (
-                                <SelectItem key={model.id} value={model.id}>
-                                    <div>
-                                        <div className="text-xs font-medium">{model.name}</div>
-                                        <div className="mt-px text-[10px] leading-tight text-muted-foreground">
-                                            {model.description}
-                                        </div>
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                                <SelectTrigger className="h-8!">
+                                    <img
+                                        alt={`${currentModel.provider} logo`}
+                                        className="size-3"
+                                        height={12}
+                                        src={`/providers/${currentModel.provider.toLowerCase()}.png`}
+                                        width={12}
+                                    />
+                                    <span className="hidden text-xs font-medium sm:block">
+                                        {currentModel.name}
+                                    </span>
+                                </SelectTrigger>
+                                <SelectContent className="min-w-[260px] p-0">
+                                    {MODELS.map((model) => (
+                                        <SelectItem key={model.id} value={model.id}>
+                                            <div>
+                                                <div className="text-xs font-medium">{model.name}</div>
+                                                <div className="mt-px text-[10px] leading-tight text-muted-foreground">
+                                                    {model.description}
+                                                </div>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </motion.div>
+                    )}
                 </div>
 
-                <Button
-                    className="gap-1.5 rounded-lg"
-                    onClick={isLoading ? stop : undefined}
-                    size="icon"
-                    type={isLoading ? "button" : "submit"}
-                >
-                    {isLoading ? <StopCircleIcon className="size-4" /> : <ArrowUpIcon />}
-                </Button>
+
+                <motion.div {...animatedItemProps}>
+                    <Button
+                        className="gap-1.5 rounded-lg"
+                        onClick={isLoading ? stop : undefined}
+                        size="icon"
+                        type={isLoading ? "button" : "submit"}
+                    >
+                        {isLoading ? <StopCircleIcon className="size-4" /> : <ArrowUpIcon />}
+                    </Button>
+                </motion.div>
             </div>
         </form>
     );

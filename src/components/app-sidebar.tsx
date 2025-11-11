@@ -103,7 +103,7 @@ export function AppSidebar({ user }: { user?: User }) {
 
       <SidebarFooter>
         {user ? (
-          <Link href="/settings/account" className="w-full" prefetch={false}>
+          <Link href="/settings" className="w-full" prefetch={false}>
             <Button
               variant="ghost"
               className="w-full justify-start items-center gap-3 py-7"

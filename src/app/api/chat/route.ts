@@ -83,6 +83,8 @@ export async function POST(request: Request) {
         })
 
         return result.toUIMessageStreamResponse({
+            sendReasoning: true,
+            sendSources: true,
             generateMessageId: () => crypto.randomUUID(),
             onFinish: async ({ messages: assistantMessages }) => {
                 await saveMessages({
