@@ -5,16 +5,23 @@ import { chat, message } from "@/lib/db/schema";
 import { and, asc, desc, eq, gte, inArray } from "drizzle-orm";
 
 export async function saveChat(
-  newChat: Omit<Chat, "createdAt" | "visibility">,
+  newChat: Pick<Chat, "userId" | "id">,
 ) {
   try {
     return await db.insert(chat).values({
       ...newChat,
-      visibility: "private" as VisibilityType,
-      createdAt: new Date(),
+      title: "New Thread",
     });
   } catch {
     throw new Error("Failed to save chat");
+  }
+}
+
+export async function updateChatTitleById({ id, title }: { id: string; title: string }) {
+  try {
+    return await db.update(chat).set({ title }).where(eq(chat.id, id));
+  } catch {
+    throw new Error("Failed to update chat title by id");
   }
 }
 
@@ -71,7 +78,7 @@ export async function getChatsByUserId({
       .select()
       .from(chat)
       .where(eq(chat.userId, userId))
-      .orderBy(desc(chat.createdAt))
+      .orderBy(asc(chat.updatedAt))
       .limit(limit)
       .offset(skip);
 

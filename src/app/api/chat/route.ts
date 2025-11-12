@@ -1,4 +1,3 @@
-import { auth } from "@/lib/auth/auth";
 import { google } from "@ai-sdk/google";
 import { DEFAULT_MODEL, getModelConfig } from "@/ai/config";
 import { after } from "next/server";
@@ -11,6 +10,7 @@ import {
   getMessageById,
   deleteChatById,
   deleteMessagesByChatIdAfterTimestamp,
+  updateChatTitleById,
 } from "@/lib/db/queries";
 
 import {
@@ -19,62 +19,80 @@ import {
   smoothStream,
   convertToModelMessages,
   generateId,
+  type UIMessage,
 } from "ai";
+
+const saveMessage = (message: UIMessage, chatId: string) =>
+  saveMessages({
+    messages: [{
+      ...message,
+      chatId,
+      attachments: [],
+      createdAt: new Date(),
+    }],
+  });
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
     const userId = request.headers.get("x-user-id") as string;
-    const { id, messages, modelId = DEFAULT_MODEL, trigger } = body;
+    const { id, messages, modelId = DEFAULT_MODEL, trigger } = await request.json();
 
     const chat = await getChatById({ id });
 
     const modelMessages = convertToModelMessages(messages);
+    const lastMessage = messages.at(-1);
+    const promises: Promise<unknown>[] = [];
 
     if (chat) {
       if (chat.userId !== userId) {
         return new Response("Forbidden", { status: 403 });
       }
+
+      if (trigger === "regenerate-message") {
+        promises.push(
+          getMessageById({ id: lastMessage.id })
+            .then(([message]) =>
+              deleteMessagesByChatIdAfterTimestamp({
+                chatId: id,
+                timestamp: message.createdAt,
+              })
+            ).then(() =>
+              saveMessage(lastMessage, id)
+            )
+        )
+      } else {
+        promises.push(
+          saveMessage(lastMessage, id)
+        )
+      }
     } else {
-      const { text } = await generateText({
-        ...getModelConfig(modelId),
-        system: `
+      promises.push(
+        saveChat({ id, userId })
+          .then(() =>
+            saveMessage(lastMessage, id)
+          )
+      )
+
+      promises.push(
+        generateText({
+          ...getModelConfig(modelId),
+          system: `
     - you will generate a short title based on the first message a user begins a conversation with
     - ensure it is not more than 80 characters long
     - the title should be a summary of the user's message
     - do not use quotes or colons`,
-        messages: modelMessages,
-      });
-      await saveChat({
-        id,
-        userId,
-        title: text,
-      });
+          messages: modelMessages,
+        }).then(({ text }) =>
+          updateChatTitleById({ id, title: text })
+        )
+      )
     }
-
-    const lastMessage = messages[messages.length - 1];
-    const messagesToSave = [lastMessage];
-    if (trigger === "regenerate-message") {
-      const [message] = await getMessageById({ id: lastMessage.id });
-      await deleteMessagesByChatIdAfterTimestamp({
-        chatId: id,
-        timestamp: message.createdAt,
-      });
-    }
-    await saveMessages({
-      messages: messagesToSave.map((message) => ({
-        ...message,
-        chatId: id,
-        attachments: [],
-        createdAt: new Date(),
-      })),
-    });
 
     const result = streamText({
       ...getModelConfig(modelId),
       messages: modelMessages,
       experimental_transform: smoothStream({ chunking: "word" }),
-      topP: 0.1,
+      topP: 0.35,
       tools: {
         google_search: google.tools.googleSearch({}),
         url_context: google.tools.urlContext({}),
@@ -87,6 +105,7 @@ export async function POST(request: Request) {
       sendSources: true,
       generateMessageId: () => crypto.randomUUID(),
       onFinish: async ({ messages: assistantMessages }) => {
+        await Promise.all(promises);
         await saveMessages({
           messages: assistantMessages.map((message) => ({
             ...message,
@@ -103,6 +122,7 @@ export async function POST(request: Request) {
         await Promise.all([
           redisClientPublisher.connect(),
           redisClientSubscriber.connect(),
+          setKey({ key: id, value: streamId, ttl: 60 * 5 }),
         ]);
         const streamContext = createResumableStreamContext({
           waitUntil: after,
@@ -110,7 +130,6 @@ export async function POST(request: Request) {
           subscriber: redisClientSubscriber,
         });
         await streamContext.createNewResumableStream(streamId, () => stream);
-        await setKey({ key: id, value: streamId, ttl: 60 * 5 });
       },
     });
   } catch (error) {
@@ -126,18 +145,10 @@ export async function DELETE(request: Request) {
   if (!id) {
     return new Response("Bad request", { status: 400 });
   }
-
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  });
-
-  if (!session?.user) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
+  const userId = request.headers.get("x-user-id") as string;
   const chat = await getChatById({ id });
 
-  if (chat?.userId !== session.user.id) {
+  if (chat?.userId !== userId) {
     return new Response("Forbidden", { status: 403 });
   }
 

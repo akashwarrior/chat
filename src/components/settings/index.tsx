@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth/auth-client";
 import { Account } from "@/components/settings/account";
 import { History } from "@/components/settings/history";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Customization } from "@/components/settings/customization";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ThemeToggle from "@/components/theme-toggle";
@@ -20,6 +20,7 @@ export function Settings({
   codeFont,
   statsForNerds,
 }: SettingsProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "customization";
 
@@ -28,13 +29,18 @@ export function Settings({
     window.history.pushState({}, "", `?${params.toString()}`);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    router.refresh();
+  };
+
   return (
     <main className="flex-1 px-4 py-8 lg:p-8 overflow-x-hidden overflow-y-auto max-w-4xl">
       <div className="flex items-center justify-between mb-6 lg:mb-8 gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold">Settings</h1>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="ghost" onClick={() => signOut()}>
+          <Button variant="ghost" onClick={handleSignOut}>
             Sign out
           </Button>
         </div>

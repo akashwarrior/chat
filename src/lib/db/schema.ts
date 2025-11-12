@@ -1,6 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { user } from "./auth-schema";
 import {
+  index,
   json,
   pgTable,
   text,
@@ -14,7 +15,6 @@ export type User = InferSelectModel<typeof user>;
 
 export const chat = pgTable("Chat", {
   id: uuid("id").primaryKey(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
   title: text("title").notNull(),
   userId: text("userId")
     .notNull()
@@ -22,7 +22,16 @@ export const chat = pgTable("Chat", {
   visibility: varchar("visibility", { enum: ["private", "public"] })
     .notNull()
     .default("private"),
-});
+  createdAt: timestamp("createdAt")
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updatedAt")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+}, (table) => [
+  index("user_id_index").on(table.userId),
+]);
 
 export type Chat = InferSelectModel<typeof chat>;
 
@@ -35,21 +44,8 @@ export const message = pgTable("Message", {
   parts: json("parts").notNull(),
   attachments: json("attachments").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+}, (table) => [
+  index("chat_id_index").on(table.chatId),
+]);
 
 export type DBMessage = InferSelectModel<typeof message>;
-
-export const document = pgTable("Document", {
-  id: uuid("id").primaryKey(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  title: text("title").notNull(),
-  content: text("content"),
-  kind: varchar("text", { enum: ["text", "code", "image", "sheet"] })
-    .notNull()
-    .default("text"),
-  userId: text("userId")
-    .notNull()
-    .references(() => user.id),
-});
-
-export type Document = InferSelectModel<typeof document>;
