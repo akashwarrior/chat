@@ -1,38 +1,38 @@
-"use client"
+"use client";
 
-import { cn } from "@/lib/utils"
-import { useState, useContext, createContext } from "react"
-import { PanelLeftIcon } from "lucide-react"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { useState, useContext, createContext } from "react";
+import { PanelLeftIcon } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 
-const SIDEBAR_COOKIE_NAME = "sidebar_state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
+const SIDEBAR_COOKIE_NAME = "sidebar_state";
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
+const SIDEBAR_WIDTH = "16rem";
+const SIDEBAR_WIDTH_MOBILE = "18rem";
+const SIDEBAR_WIDTH_ICON = "3rem";
 
 type SidebarContextProps = {
-  open: boolean
-  setOpen: (open: boolean) => void
-}
+  open: boolean;
+  setOpen: (open: boolean) => void;
+};
 
-const SidebarContext = createContext<SidebarContextProps | null>(null)
+const SidebarContext = createContext<SidebarContextProps | null>(null);
 
 function useSidebar() {
-  const context = useContext(SidebarContext)
+  const context = useContext(SidebarContext);
   if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.")
+    throw new Error("useSidebar must be used within a SidebarProvider.");
   }
 
-  return context
+  return context;
 }
 
 function SidebarProvider({
@@ -40,16 +40,16 @@ function SidebarProvider({
   className,
   children,
 }: {
-  defaultOpen?: boolean
-  className?: string
-  children?: React.ReactNode
+  defaultOpen?: boolean;
+  className?: string;
+  children?: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen)
+  const [open, setOpen] = useState(defaultOpen);
   const handleOpen = (value: boolean) => {
-    setOpen(value)
+    setOpen(value);
 
     // This sets the cookie to keep the sidebar state.
-    document.cookie = `${SIDEBAR_COOKIE_NAME}=${value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+    document.cookie = `${SIDEBAR_COOKIE_NAME}=${value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
   };
 
   return (
@@ -64,18 +64,18 @@ function SidebarProvider({
         }
         className={cn(
           "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full",
-          className
+          className,
         )}
       >
         {children}
       </div>
     </SidebarContext.Provider>
-  )
+  );
 }
 
 function Sidebar({ children }: { children?: React.ReactNode }) {
-  const { open, setOpen } = useSidebar()
-  const isMobile = useIsMobile()
+  const { open, setOpen } = useSidebar();
+  const isMobile = useIsMobile();
 
   if (isMobile) {
     return (
@@ -99,15 +99,15 @@ function Sidebar({ children }: { children?: React.ReactNode }) {
           <div className="flex h-full w-full flex-col">{children}</div>
         </SheetContent>
       </Sheet>
-    )
+    );
   }
 
   return (
     <div
       className="group peer text-sidebar-foreground hidden md:block"
       data-state={open ? "expanded" : "collapsed"}
-      data-collapsible={!open ? 'offcanvas' : ""}
-      data-variant={'sidebar'}
+      data-collapsible={!open ? "offcanvas" : ""}
+      data-variant={"sidebar"}
       data-side="left"
       data-slot="sidebar"
     >
@@ -118,7 +118,7 @@ function Sidebar({ children }: { children?: React.ReactNode }) {
           "relative w-(--sidebar-width) bg-transparent transition-[width] duration-100 ease-linear",
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
-          "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
+          "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
         )}
       />
       <div
@@ -138,11 +138,11 @@ function Sidebar({ children }: { children?: React.ReactNode }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function SidebarTrigger() {
-  const { open, setOpen } = useSidebar()
+  const { open, setOpen } = useSidebar();
 
   return (
     <Button
@@ -155,7 +155,7 @@ function SidebarTrigger() {
     >
       <PanelLeftIcon />
     </Button>
-  )
+  );
 }
 
 function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -166,7 +166,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("flex flex-col gap-2 p-2", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -177,7 +177,7 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("flex flex-col gap-2 p-2", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
@@ -187,11 +187,11 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       data-sidebar="content"
       className={cn(
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -202,4 +202,4 @@ export {
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
-}
+};

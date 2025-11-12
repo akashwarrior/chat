@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { signOut } from "@/lib/auth/auth-client"
-import { Account } from "@/components/settings/account"
-import { History } from "@/components/settings/history"
-import { useSearchParams } from "next/navigation"
-import { Customization } from "@/components/settings/customization"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ThemeToggle from "@/components/theme-toggle"
+import { Button } from "@/components/ui/button";
+import { signOut } from "@/lib/auth/auth-client";
+import { Account } from "@/components/settings/account";
+import { History } from "@/components/settings/history";
+import { useSearchParams } from "next/navigation";
+import { Customization } from "@/components/settings/customization";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ThemeToggle from "@/components/theme-toggle";
 
 interface SettingsProps {
   mainTextFont: string;
@@ -15,14 +15,18 @@ interface SettingsProps {
   statsForNerds: boolean;
 }
 
-export function Settings({ mainTextFont, codeFont, statsForNerds }: SettingsProps) {
+export function Settings({
+  mainTextFont,
+  codeFont,
+  statsForNerds,
+}: SettingsProps) {
   const searchParams = useSearchParams();
-  const tab = searchParams.get("tab") || "customization"
+  const tab = searchParams.get("tab") || "customization";
 
   const handleTabChange = (value: string) => {
-    const params = new URLSearchParams({ tab: value })
-    window.history.pushState({}, "", `?${params.toString()}`)
-  }
+    const params = new URLSearchParams({ tab: value });
+    window.history.pushState({}, "", `?${params.toString()}`);
+  };
 
   return (
     <main className="flex-1 px-4 py-8 lg:p-8 overflow-x-hidden overflow-y-auto max-w-4xl">
@@ -111,5 +115,5 @@ export function Settings({ mainTextFont, codeFont, statsForNerds }: SettingsProp
         </TabsContent>
       </Tabs>
     </main>
-  )
+  );
 }

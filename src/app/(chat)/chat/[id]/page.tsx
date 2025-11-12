@@ -5,7 +5,11 @@ import { UIDataTypes, UIMessagePart, UITools } from "ai";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
-export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ChatPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const [{ id }, headerlist] = await Promise.all([params, headers()]);
   const chat = await getChatById({ id });
 

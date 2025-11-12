@@ -9,40 +9,41 @@ const redis = getRedisClient();
 await redis.connect();
 
 export const auth = betterAuth({
-    secret: process.env.BETTER_AUTH_SECRET,
-    baseURL: process.env.BETTER_AUTH_URL,
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL,
 
-    database: drizzleAdapter(db, {
-        provider: "pg",
-        schema: schema,
-    }),
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: schema,
+  }),
 
-    socialProviders: {
-        google: {
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-        },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
+  },
 
-    session: {
-        cookieCache: {
-            enabled: true,
-            maxAge: 60 * 60,
-        },
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 60,
     },
+  },
 
-    secondaryStorage: {
-        get: async (key) => {
-            return await redis.get(key);
-        },
-        set: async (key, value, ttl) => {
-            if (ttl) await redis.set(key, value, { expiration: { type: 'EX', value: ttl } });
-            else await redis.set(key, value);
-        },
-        delete: async (key) => {
-            await redis.del(key);
-        }
+  secondaryStorage: {
+    get: async (key) => {
+      return await redis.get(key);
     },
+    set: async (key, value, ttl) => {
+      if (ttl)
+        await redis.set(key, value, { expiration: { type: "EX", value: ttl } });
+      else await redis.set(key, value);
+    },
+    delete: async (key) => {
+      await redis.del(key);
+    },
+  },
 
-    plugins: [nextCookies()],
+  plugins: [nextCookies()],
 });

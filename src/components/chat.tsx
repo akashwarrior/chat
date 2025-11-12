@@ -1,109 +1,110 @@
-'use client'
+"use client";
 
-import { mutate } from "swr"
-import { useEffect, useMemo, useState } from "react"
-import { Messages } from "./messages"
-import { ChatInput } from "./chat-input"
-import { usePathname } from "next/navigation"
-import { DefaultChatTransport } from "ai"
-import { getChatHistoryPaginationKey } from "@/hooks/use-chat-history"
-import { unstable_serialize } from "swr/infinite"
-import { Chat as AiChat, UIMessage, useChat } from "@ai-sdk/react"
+import { mutate } from "swr";
+import { useEffect, useMemo, useState } from "react";
+import { Messages } from "./messages";
+import { ChatInput } from "./chat-input";
+import { usePathname } from "next/navigation";
+import { DefaultChatTransport } from "ai";
+import { getChatHistoryPaginationKey } from "@/hooks/use-chat-history";
+import { unstable_serialize } from "swr/infinite";
+import { Chat as AiChat, UIMessage, useChat } from "@ai-sdk/react";
 import {
-    Conversation,
-    ConversationContent,
-    ConversationScrollButton,
-} from "./ai-elements/conversation"
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "./ai-elements/conversation";
 
 type ChatProps = {
-    id?: string;
-    initialMessages: UIMessage[];
-    isReadonly: boolean;
+  id?: string;
+  initialMessages: UIMessage[];
+  isReadonly: boolean;
 };
 
 export function Chat({ id, initialMessages, isReadonly }: ChatProps) {
-    const pathname = usePathname();
-    const [chatId, setChatId] = useState<string | undefined>(id);
+  const pathname = usePathname();
+  const [chatId, setChatId] = useState<string | undefined>(id);
 
-    const chatClient = useMemo(
-        () =>
-            new AiChat({
-                id: chatId,
-                generateId: () => crypto.randomUUID(),
-                transport: new DefaultChatTransport({
-                    api: "/api/chat",
-                    prepareReconnectToStreamRequest: ({ id }) => {
-                        return { api: `/api/chat/${id}/stream` }
-                    }
-                }),
-            }),
-        [chatId]
-    );
+  const chatClient = useMemo(
+    () =>
+      new AiChat({
+        id: chatId,
+        generateId: () => crypto.randomUUID(),
+        transport: new DefaultChatTransport({
+          api: "/api/chat",
+          prepareReconnectToStreamRequest: ({ id }) => {
+            return { api: `/api/chat/${id}/stream` };
+          },
+        }),
+      }),
+    [chatId],
+  );
 
-    const { messages, status, stop, regenerate, sendMessage, setMessages, resumeStream } = useChat({
-        ...chatClient,
-        messages: initialMessages,
-        onFinish: () => mutate(unstable_serialize(getChatHistoryPaginationKey)),
+  const {
+    messages,
+    status,
+    stop,
+    regenerate,
+    sendMessage,
+    setMessages,
+    resumeStream,
+  } = useChat({
+    ...chatClient,
+    messages: initialMessages,
+    onFinish: () => mutate(unstable_serialize(getChatHistoryPaginationKey)),
+  });
+
+  const isLoading = status === "streaming" || status === "submitted";
+
+  useEffect(() => {
+    const mostRecentMessage = initialMessages.at(-1);
+
+    if (mostRecentMessage?.role === "user") {
+      resumeStream();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (pathname === "/") {
+      setChatId(crypto.randomUUID());
+    }
+  }, [pathname]);
+
+  const handleSubmit = async (chat: Omit<UIMessage, "id">, modelId: string) => {
+    if (pathname === "/" && chatId) {
+      window.history.pushState({}, "", `/chat/${chatId}`);
+    }
+
+    await sendMessage(chat, {
+      body: { modelId },
     });
+  };
 
-    const isLoading = status === "streaming" || status === "submitted";
+  const handleRegenerate = (messageId: string) => {
+    stop();
+    regenerate({ messageId });
+  };
 
-    useEffect(() => {
-        const mostRecentMessage = initialMessages.at(-1);
+  return (
+    <div className="flex w-full max-h-screen min-h-full flex-col bg-background relative overflow-hidden">
+      <Conversation>
+        <ConversationContent className="overflow-x-hidden pt-16 md:pt-12 pb-44 min-h-full">
+          <Messages
+            isReadonly={isReadonly}
+            messages={messages}
+            regenerate={handleRegenerate}
+            setMessages={setMessages}
+            isLoading={isLoading}
+          />
+        </ConversationContent>
+        <ConversationScrollButton />
+      </Conversation>
 
-        if (mostRecentMessage?.role === "user") {
-            resumeStream();
-        }
-    }, []);
-
-    useEffect(() => {
-        if (pathname === "/") {
-            setChatId(crypto.randomUUID());
-        }
-    }, [pathname]);
-
-    const handleSubmit = async (
-        chat: Omit<UIMessage, "id">,
-        modelId: string
-    ) => {
-        if (pathname === "/" && chatId) {
-            window.history.pushState({}, "", `/chat/${chatId}`);
-        }
-
-        await sendMessage(chat, {
-            body: { modelId },
-        });
-    };
-
-    const handleRegenerate = (messageId: string) => {
-        stop();
-        regenerate({ messageId });
-    };
-
-    return (
-        <div className="flex w-full max-h-screen min-h-full flex-col bg-background relative overflow-hidden">
-            <Conversation>
-                <ConversationContent className="overflow-x-hidden pt-16 md:pt-12 pb-44 min-h-full">
-                    <Messages
-                        isReadonly={isReadonly}
-                        messages={messages}
-                        regenerate={handleRegenerate}
-                        setMessages={setMessages}
-                        isLoading={isLoading}
-                    />
-                </ConversationContent>
-                <ConversationScrollButton />
-            </Conversation>
-
-            {!isReadonly && (
-                <div className="px-4 absolute bottom-0 left-0 right-0">
-                    <ChatInput
-                        isLoading={isLoading}
-                        stop={stop}
-                        submit={handleSubmit}
-                    />
-                </div>
-            )}
+      {!isReadonly && (
+        <div className="px-4 absolute bottom-0 left-0 right-0">
+          <ChatInput isLoading={isLoading} stop={stop} submit={handleSubmit} />
         </div>
-    );
+      )}
+    </div>
+  );
 }

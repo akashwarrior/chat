@@ -4,7 +4,9 @@ import type { VisibilityType } from "@/lib/types";
 import { chat, message } from "@/lib/db/schema";
 import { and, asc, desc, eq, gte, inArray } from "drizzle-orm";
 
-export async function saveChat(newChat: Omit<Chat, "createdAt" | "visibility">) {
+export async function saveChat(
+  newChat: Omit<Chat, "createdAt" | "visibility">,
+) {
   try {
     return await db.insert(chat).values({
       ...newChat,
@@ -41,7 +43,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
       return { deletedCount: 0 };
     }
 
-    const chatIds = userChats.map(c => c.id);
+    const chatIds = userChats.map((c) => c.id);
     await db.delete(message).where(inArray(message.chatId, chatIds));
 
     const deletedChats = await db
@@ -55,7 +57,15 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   }
 }
 
-export async function getChatsByUserId({ limit, skip, userId }: { limit: number; skip: number; userId: string }) {
+export async function getChatsByUserId({
+  limit,
+  skip,
+  userId,
+}: {
+  limit: number;
+  skip: number;
+  userId: string;
+}) {
   try {
     const chats = await db
       .select()
@@ -124,18 +134,18 @@ export async function deleteMessagesByChatIdAfterTimestamp({
       .select({ id: message.id })
       .from(message)
       .where(
-        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp))
+        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
       );
 
     const messageIds = messagesToDelete.map(
-      (currentMessage) => currentMessage.id
+      (currentMessage) => currentMessage.id,
     );
 
     if (messageIds.length > 0) {
       return await db
         .delete(message)
         .where(
-          and(eq(message.chatId, chatId), inArray(message.id, messageIds))
+          and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
         );
     }
   } catch {
@@ -143,7 +153,13 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   }
 }
 
-export async function updateChatVisibilityById({ chatId, visibility }: { chatId: string; visibility: VisibilityType }) {
+export async function updateChatVisibilityById({
+  chatId,
+  visibility,
+}: {
+  chatId: string;
+  visibility: VisibilityType;
+}) {
   try {
     return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
   } catch {

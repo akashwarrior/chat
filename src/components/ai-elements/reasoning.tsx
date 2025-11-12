@@ -6,7 +6,11 @@ import type { ComponentProps } from "react";
 import { createContext, memo, useContext, useEffect, useState } from "react";
 import { Response } from "./response";
 import { Shimmer } from "./shimmer";
-import { Disclosure, DisclosureContent, DisclosureTrigger } from "../ui/disclosure";
+import {
+  Disclosure,
+  DisclosureContent,
+  DisclosureTrigger,
+} from "../ui/disclosure";
 
 type ReasoningContextValue = {
   isStreaming: boolean;
@@ -33,12 +37,7 @@ const AUTO_CLOSE_DELAY = 1000;
 const MS_IN_S = 1000;
 
 export const Reasoning = memo(
-  ({
-    className,
-    isStreaming = false,
-    children,
-    ...props
-  }: ReasoningProps) => {
+  ({ className, isStreaming = false, children, ...props }: ReasoningProps) => {
     const [isOpen, setIsOpen] = useState(isStreaming);
     const [duration, setDuration] = useState(0);
 
@@ -88,10 +87,13 @@ export const Reasoning = memo(
         </Disclosure>
       </ReasoningContext.Provider>
     );
-  }
+  },
 );
 
-export type ReasoningTriggerProps = Omit<ComponentProps<typeof DisclosureTrigger>, 'children'>;
+export type ReasoningTriggerProps = Omit<
+  ComponentProps<typeof DisclosureTrigger>,
+  "children"
+>;
 
 const getThinkingMessage = (isStreaming: boolean, duration: number) => {
   if (isStreaming) {
@@ -111,7 +113,7 @@ export const ReasoningTrigger = memo(
       <DisclosureTrigger
         className={cn(
           "cursor-pointer flex w-full items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground",
-          className
+          className,
         )}
         {...props}
       >
@@ -120,17 +122,15 @@ export const ReasoningTrigger = memo(
         <ChevronDownIcon
           className={cn(
             "size-4 transition-transform",
-            isOpen ? "rotate-180" : "rotate-0"
+            isOpen ? "rotate-180" : "rotate-0",
           )}
         />
       </DisclosureTrigger>
     );
-  }
+  },
 );
 
-export type ReasoningContentProps = ComponentProps<
-  typeof DisclosureContent
-> & {
+export type ReasoningContentProps = ComponentProps<typeof DisclosureContent> & {
   children: string;
 };
 
@@ -140,13 +140,13 @@ export const ReasoningContent = memo(
       className={cn(
         "mt-4 text-sm",
         "data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-top-2 data-[state=open]:slide-in-from-top-2 text-muted-foreground outline-none data-[state=closed]:animate-out data-[state=open]:animate-in",
-        className
+        className,
       )}
       {...props}
     >
       <Response className="grid gap-2">{children}</Response>
     </DisclosureContent>
-  )
+  ),
 );
 
 Reasoning.displayName = "Reasoning";

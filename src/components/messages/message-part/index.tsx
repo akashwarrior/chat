@@ -1,23 +1,25 @@
-'use client'
+"use client";
 
-import { useRef } from "react"
-import type { UIMessage } from "@ai-sdk/react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Response } from "@/components/ai-elements/response"
-import { PreviewAttachment } from "@/components/messages/preview-attachment"
+import { useRef } from "react";
+import type { UIMessage } from "@ai-sdk/react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Response } from "@/components/ai-elements/response";
+import { PreviewAttachment } from "@/components/messages/preview-attachment";
 import {
   Reasoning,
   ReasoningContent,
   ReasoningTrigger,
-} from "@/components/ai-elements/reasoning"
+} from "@/components/ai-elements/reasoning";
 
 type MessagePartProps = {
   editing: boolean;
   handleEditableBlur: () => void;
   handleEditableChange: (value: string) => void;
-  handleEditableKeyDown: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  handleEditableKeyDown: (
+    event: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => void;
   isLoading: boolean;
   message: UIMessage;
 };
@@ -56,11 +58,7 @@ export function MessagePart({
 
       case "reasoning":
         return (
-          <Reasoning
-            key={key}
-            className="w-full"
-            isStreaming={isStreaming}
-          >
+          <Reasoning key={key} className="w-full" isStreaming={isStreaming}>
             <ReasoningTrigger />
             <ReasoningContent>{part.text}</ReasoningContent>
           </Reasoning>
@@ -74,8 +72,8 @@ export function MessagePart({
               "w-fit overflow-hidden rounded-2xl p-2 text-sm",
               message.role === "user" && "ml-auto",
               !editing &&
-              message.role === "user" &&
-              "bg-primary text-primary-foreground"
+                message.role === "user" &&
+                "bg-primary text-primary-foreground",
             )}
           >
             {editing ? (

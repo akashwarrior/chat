@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import Image from "next/image";
 import { Button } from "../ui/button";
@@ -30,8 +30,12 @@ export function SettingsAside({ user }: { user: User }) {
           height={100}
           className="rounded-full"
         />
-        <h2 className="text-lg lg:text-xl font-semibold text-center">{user.name}</h2>
-        <p className="text-xs lg:text-sm text-muted-foreground mb-3 text-center break-all">{user.email}</p>
+        <h2 className="text-lg lg:text-xl font-semibold text-center">
+          {user.name}
+        </h2>
+        <p className="text-xs lg:text-sm text-muted-foreground mb-3 text-center break-all">
+          {user.email}
+        </p>
         <Badge variant="secondary">Free Plan</Badge>
       </div>
 
@@ -39,9 +43,7 @@ export function SettingsAside({ user }: { user: User }) {
         <CardContent className="p-0!">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium">Message Usage</h3>
-            <span className="text-xs text-muted-foreground">
-              Resets daily
-            </span>
+            <span className="text-xs text-muted-foreground">Resets daily</span>
           </div>
           <div className="space-y-2">
             <div>
@@ -87,5 +89,5 @@ export function SettingsAside({ user }: { user: User }) {
         </div>
       </div>
     </aside>
-  )
+  );
 }

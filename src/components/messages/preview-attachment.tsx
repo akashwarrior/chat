@@ -19,7 +19,10 @@ export const PreviewAttachment = ({
 
   return (
     <div
-      className={cn("group relative size-16 overflow-hidden rounded-lg border bg-muted", className)}
+      className={cn(
+        "group relative size-16 overflow-hidden rounded-lg border bg-muted",
+        className,
+      )}
       data-testid="input-attachment-preview"
     >
       {mediaType.startsWith("image") ? (

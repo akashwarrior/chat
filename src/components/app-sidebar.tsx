@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { mutate } from "swr"
-import { toast } from "sonner"
-import { useState } from "react"
-import { Input } from "./ui/input"
-import { Button } from "./ui/button"
-import { User } from "better-auth"
-import { usePathname, useRouter } from "next/navigation"
-import { unstable_serialize } from "swr/infinite"
-import { SidebarHistory } from "./sidebar-history"
-import { getChatHistoryPaginationKey } from "@/hooks/use-chat-history"
-import { LogInIcon, SearchIcon } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { mutate } from "swr";
+import { toast } from "sonner";
+import { useState } from "react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { User } from "better-auth";
+import { usePathname, useRouter } from "next/navigation";
+import { unstable_serialize } from "swr/infinite";
+import { SidebarHistory } from "./sidebar-history";
+import { getChatHistoryPaginationKey } from "@/hooks/use-chat-history";
+import { LogInIcon, SearchIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import {
   Dialog,
   DialogFooter,
@@ -26,8 +26,8 @@ import {
   DialogHeader,
   DialogContent,
   DialogTitle,
-  DialogClose
-} from "./ui/dialog"
+  DialogClose,
+} from "./ui/dialog";
 
 export function AppSidebar({ user }: { user?: User }) {
   const pathname = usePathname();
@@ -67,17 +67,13 @@ export function AppSidebar({ user }: { user?: User }) {
     }
   };
 
-
   return (
     <Sidebar>
       <SidebarHeader className="p-3.5 gap-4 flex flex-col items-center">
         <Link href="/" className="text-xl font-bold" prefetch={false}>
           Chat
         </Link>
-        <Button
-          onClick={() => router.push("/")}
-          className="w-full"
-        >
+        <Button onClick={() => router.push("/")} className="w-full">
           New Chat
         </Button>
 
@@ -92,9 +88,7 @@ export function AppSidebar({ user }: { user?: User }) {
 
       <SidebarContent className="p-3.5 flex-1">
         {user ? (
-          <SidebarHistory
-            showDialog={setDeleteId}
-          />
+          <SidebarHistory showDialog={setDeleteId} />
         ) : (
           <div className="px-2 text-sm text-zinc-500">
             Login to save and revisit previous chats!
@@ -145,16 +139,12 @@ export function AppSidebar({ user }: { user?: User }) {
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">
-                Cancel
-              </Button>
+              <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button onClick={handleDelete}>
-              Continue
-            </Button>
+            <Button onClick={handleDelete}>Continue</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </Sidebar>
-  )
+  );
 }

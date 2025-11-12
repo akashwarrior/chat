@@ -44,13 +44,20 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Chat - AI Assistant",
-  description: "Experience intelligent conversations with our AI assistant. Features real-time messaging, markdown support, and seamless user experience.",
-  keywords: ["chat", "AI", "conversation", "messaging", "artificial intelligence", "real-time"],
+  description:
+    "Experience intelligent conversations with our AI assistant. Features real-time messaging, markdown support, and seamless user experience.",
+  keywords: [
+    "chat",
+    "AI",
+    "conversation",
+    "messaging",
+    "artificial intelligence",
+    "real-time",
+  ],
   icons: {
     icon: "/logo.svg",
   },
 };
-
 
 export default async function RootLayout({
   children,
@@ -58,8 +65,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const mainTextFont = cookieStore.get('mainTextFont')?.value || 'pixelify-sans';
-  const codeFont = cookieStore.get('codeFont')?.value || 'jetBrains-mono';
+  const mainTextFont =
+    cookieStore.get("mainTextFont")?.value || "pixelify-sans";
+  const codeFont = cookieStore.get("codeFont")?.value || "jetBrains-mono";
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -76,30 +84,22 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={
-          `${pixelify_Sans.variable}
+        className={`${pixelify_Sans.variable}
           ${fira_Code.variable}
           ${jetBrains_Mono.variable}
           ${m_PLUS_1_Code.variable}
           ${poppins.variable}
-            antialiased`
-        }>
+            antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-
           {children}
 
-          <Toaster
-            position="top-right"
-            expand={false}
-            richColors
-            closeButton
-          />
-
+          <Toaster position="top-right" expand={false} richColors closeButton />
         </ThemeProvider>
       </body>
     </html>

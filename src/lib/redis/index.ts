@@ -9,12 +9,20 @@ export function getRedisClient() {
   return client;
 }
 
-export async function setKey({ key, value, ttl }: { key: string; value: string; ttl: number }) {
+export async function setKey({
+  key,
+  value,
+  ttl,
+}: {
+  key: string;
+  value: string;
+  ttl: number;
+}) {
   const client = getRedisClient();
   try {
     await client.connect();
     await client.set(key, value, {
-      expiration: { type: 'EX', value: ttl }
+      expiration: { type: "EX", value: ttl },
     });
   } finally {
     await client.close();

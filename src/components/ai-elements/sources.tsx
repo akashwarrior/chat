@@ -3,7 +3,11 @@
 import { cn } from "@/lib/utils";
 import { BookIcon, ChevronDownIcon } from "lucide-react";
 import type { ComponentProps } from "react";
-import { Disclosure, DisclosureContent, DisclosureTrigger } from "../ui/disclosure";
+import {
+  Disclosure,
+  DisclosureContent,
+  DisclosureTrigger,
+} from "../ui/disclosure";
 
 export type SourcesProps = ComponentProps<typeof Disclosure>;
 
@@ -14,9 +18,12 @@ export const Sources = ({ className, ...props }: SourcesProps) => (
   />
 );
 
-export type SourcesTriggerProps = Omit<ComponentProps<typeof DisclosureTrigger>, 'children'> & {
+export type SourcesTriggerProps = Omit<
+  ComponentProps<typeof DisclosureTrigger>,
+  "children"
+> & {
   totalSources: number;
-}
+};
 
 export const SourcesTrigger = ({
   className,
@@ -39,10 +46,7 @@ export const SourcesContent = ({
   ...props
 }: SourcesContentProps) => (
   <DisclosureContent
-    className={cn(
-      "flex w-fit flex-col gap-2 border p-2 rounded-md",
-      className
-    )}
+    className={cn("flex w-fit flex-col gap-2 border p-2 rounded-md", className)}
     {...props}
   />
 );

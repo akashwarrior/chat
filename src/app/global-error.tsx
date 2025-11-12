@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
-import Link from 'next/link'
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import Link from "next/link";
 
 export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
@@ -32,25 +32,28 @@ export default function Error({
           </Button>
 
           <Link href="/" prefetch={false}>
-            <Button variant="outline" className="flex items-center gap-2 w-full">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 w-full"
+            >
               <Home className="h-4 w-4" />
               Go home
             </Button>
           </Link>
         </div>
 
-        {process.env.NODE_ENV === 'development' && error.message && (
+        {process.env.NODE_ENV === "development" && error.message && (
           <details className="mt-6 text-left">
             <summary className="cursor-pointer text-sm text-muted-foreground">
               Error details (development only)
             </summary>
             <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto">
               {error.message}
-              {error.stack && '\n\n' + error.stack}
+              {error.stack && "\n\n" + error.stack}
             </pre>
           </details>
         )}
       </div>
     </div>
-  )
-} 
+  );
+}

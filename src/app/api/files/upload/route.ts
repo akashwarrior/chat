@@ -9,9 +9,15 @@ const FileSchema = z.object({
     .refine((file) => file.size <= 5 * 1024 * 1024, {
       message: "File size should be less than 5MB",
     })
-    .refine((file) => ["image/png", "image/jpeg", "image/jpg", "application/pdf"].includes(file.type), {
-      message: "File type should be an image or PDF",
-    }),
+    .refine(
+      (file) =>
+        ["image/png", "image/jpeg", "image/jpg", "application/pdf"].includes(
+          file.type,
+        ),
+      {
+        message: "File type should be an image or PDF",
+      },
+    ),
 });
 
 export async function POST(request: Request) {
@@ -58,7 +64,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json(
       { error: "Failed to process request" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

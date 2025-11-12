@@ -1,5 +1,5 @@
-'use client';
-import * as React from 'react';
+"use client";
+import * as React from "react";
 import {
   AnimatePresence,
   motion,
@@ -7,9 +7,9 @@ import {
   Transition,
   Variant,
   Variants,
-} from 'motion/react';
-import { createContext, useContext, useState, useId, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+} from "motion/react";
+import { createContext, useContext, useState, useId, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 export type DisclosureContextType = {
   open: boolean;
@@ -18,7 +18,7 @@ export type DisclosureContextType = {
 };
 
 const DisclosureContext = createContext<DisclosureContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export type DisclosureProviderProps = {
@@ -64,7 +64,7 @@ function DisclosureProvider({
 function useDisclosure() {
   const context = useContext(DisclosureContext);
   if (!context) {
-    throw new Error('useDisclosure must be used within a DisclosureProvider');
+    throw new Error("useDisclosure must be used within a DisclosureProvider");
   }
   return context;
 }
@@ -135,7 +135,7 @@ export function DisclosureContent({
 
   const BASE_VARIANTS: Variants = {
     expanded: {
-      height: 'auto',
+      height: "auto",
       opacity: 1,
     },
     collapsed: {
@@ -154,11 +154,11 @@ export function DisclosureContent({
       {open && (
         <motion.div
           id={uniqueId}
-          initial='collapsed'
-          animate='expanded'
-          exit='collapsed'
+          initial="collapsed"
+          animate="expanded"
+          exit="collapsed"
           variants={combinedVariants}
-          className={cn('overflow-hidden', className)}
+          className={cn("overflow-hidden", className)}
         >
           {children}
         </motion.div>
