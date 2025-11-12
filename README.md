@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<a href="https://chat.akashgupta.tech">
+  <p align="center">
+    <img alt="Chat logo" src="public/logo.svg" width="80" />
+  </p>
+  <h1 align="center">Chat · Assistant</h1>
+</a>
 
-## Getting Started
+<p align="center">
+  Lightweight AI chat powered by Google Gemini, resumable streaming, and secure authentication.
+</p>
 
-First, run the development server:
+<p align="center">
+  <a href="#features"><strong>Features</strong></a> ·
+  <a href="#model-providers"><strong>Model Providers</strong></a> ·
+  <a href="#deploy-your-own"><strong>Deploy</strong></a> ·
+  <a href="#running-locally"><strong>Run Locally</strong></a>
+</p>
+
+---
+
+## Features
+
+- Next.js 16 App Router with shared layouts and SWR-powered history.
+- Vercel AI SDK + `resumable-stream` for smooth, reconnectable responses.
+- Google Gemini tools: search, URL context, and code execution.
+- Inline regenerate/edit, citations, reasoning trace, and copy actions.
+- Attachment uploads via Vercel Blob (images & PDFs up to 5 MB).
+- Better Auth with Google OAuth and Redis-backed session caching.
+- User customization (name, traits, preferences) and visual settings.
+- Chat history export/backup with full message data.
+
+## Model Providers
+
+- Gemini 2.5 Pro, Flash, and Flash Lite configured in `src/ai/config.ts`.
+- Reasoning output (`thinking`) and tool calls ship enabled by default.
+- Swap IDs or extend the list to adopt future Gemini releases.
+
+## Deploy Your Own
+
+1. Provision PostgreSQL, Redis, and Vercel Blob storage.
+2. Create Google OAuth credentials and allow your production callback URL.
+3. Copy `.env.example` to `.env` and set all required values.
+4. Deploy with Vercel or your preferred Next.js host.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+
+## Running Locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Required environment variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable                       | Description                                                            |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| `DATABASE_URL`                 | PostgreSQL connection string for Drizzle ORM.                          |
+| `BETTER_AUTH_SECRET`           | Secret for signing sessions (generate with `openssl rand -base64 32`). |
+| `BETTER_AUTH_URL`              | Base URL for auth callbacks (e.g., `http://localhost:3000`).           |
+| `GOOGLE_CLIENT_ID`             | Google OAuth client ID.                                                |
+| `GOOGLE_CLIENT_SECRET`         | Google OAuth client secret.                                            |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | API key for Gemini models.                                             |
+| `CHAT_REDIS_URL`               | Redis connection for sessions and stream state.                        |
+| `BLOB_READ_WRITE_TOKEN`        | Vercel Blob token for file uploads.                                    |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm db:generate   # optional, sync SQL
+pnpm db:migrate    # apply migrations
+pnpm dev
+```
 
-## Learn More
+Visit [http://localhost:3000](http://localhost:3000), sign in with Google, and start chatting.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Useful scripts: `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm db:studio`.
