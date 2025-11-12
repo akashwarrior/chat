@@ -1,14 +1,14 @@
 'use client';
 
-import { motion } from "motion/react"
-import { usePathname } from "next/navigation"
-import type { Chat } from "@/lib/db/schema"
-import useSWRInfinite from "swr/infinite"
-import { isToday, isYesterday, subMonths, subWeeks } from "date-fns"
-import { Button, buttonVariants } from "./ui/button"
-import { TrashIcon } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { motion } from "motion/react"
+import { TrashIcon } from "lucide-react"
+import { usePathname } from "next/navigation"
+import type { Chat } from "@/lib/db/schema"
+import { Button, buttonVariants } from "./ui/button"
+import { useChatHistory } from "@/hooks/use-chat-history";
+import { isToday, isYesterday, subMonths, subWeeks } from "date-fns"
 
 type ChatGroupLabel =
     | "Today"
@@ -18,10 +18,6 @@ type ChatGroupLabel =
     | "Older than last month";
 
 type GroupedChats = Record<ChatGroupLabel, Chat[]>;
-
-const PAGE_SIZE = 20;
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const groupChatsByDate = (chats: Chat[]): GroupedChats => {
     const now = new Date();
@@ -56,9 +52,6 @@ const groupChatsByDate = (chats: Chat[]): GroupedChats => {
     );
 };
 
-export const getChatHistoryPaginationKey = (index: number) =>
-    `/api/history?skip=${index * PAGE_SIZE}&limit=${PAGE_SIZE}`;
-
 interface SidebarHistoryProps {
     showDialog: (id: string) => void;
 }
@@ -67,24 +60,10 @@ export function SidebarHistory({ showDialog }: SidebarHistoryProps) {
     const pathname = usePathname();
     const selectedChatId = pathname.split("/").pop();
 
-    const { data, error, isValidating, setSize } = useSWRInfinite<Chat[]>(
-        getChatHistoryPaginationKey,
-        fetcher,
-        { revalidateOnMount: true }
-    );
+    const { data, hasMore, isLoading, error, loadMore } = useChatHistory();
 
     const chats = data?.flat() ?? [];
-    const hasChats = chats.length > 0;
-    const hasMore = data?.[data.length - 1]?.length === PAGE_SIZE;
-    const groupedChats = hasChats ? groupChatsByDate(chats) : null;
-
-    const handleLoadMore = () => {
-        if (!hasMore || isValidating) {
-            return;
-        }
-
-        setSize((prev) => prev + 1);
-    };
+    const groupedChats = chats.length > 0 ? groupChatsByDate(chats) : null;
 
     if (error) {
         return (
@@ -94,7 +73,7 @@ export function SidebarHistory({ showDialog }: SidebarHistoryProps) {
         );
     }
 
-    if (!hasChats && !isValidating) {
+    if (chats.length === 0 && !isLoading) {
         return (
             <div className="flex w-full flex-row items-center justify-center gap-2 px-2 text-sm text-zinc-500">
                 Your conversations will appear here once you start chatting!
@@ -117,14 +96,14 @@ export function SidebarHistory({ showDialog }: SidebarHistoryProps) {
                         />
                     ))}
 
-            {isValidating && (
+            {isLoading && (
                 <HistorySkeleton />
             )}
 
-            {hasMore && !isValidating && (
+            {hasMore && !isLoading && (
                 <motion.div
                     className="h-4"
-                    onViewportEnter={handleLoadMore}
+                    onViewportEnter={loadMore}
                 />
             )}
         </>

@@ -11,6 +11,7 @@ export default function ThemeToggle() {
         <Button
             size="icon"
             variant="ghost"
+            className="relative"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         >
             <Sun className="absolute opacity-0 transition-all duration-200 dark:opacity-100 rotate-0 dark:-rotate-180 scale-0 dark:scale-100" />

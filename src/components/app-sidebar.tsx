@@ -10,7 +10,8 @@ import { Button } from "./ui/button"
 import { User } from "better-auth"
 import { usePathname, useRouter } from "next/navigation"
 import { unstable_serialize } from "swr/infinite"
-import { getChatHistoryPaginationKey, SidebarHistory } from "./sidebar-history"
+import { SidebarHistory } from "./sidebar-history"
+import { getChatHistoryPaginationKey } from "@/hooks/use-chat-history"
 import { LogInIcon, SearchIcon } from "lucide-react"
 import {
   Sidebar,

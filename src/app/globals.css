@@ -142,4 +142,35 @@
   ::-webkit-scrollbar-thumb {
     @apply bg-primary rounded-full;
   }
+
+  /* Main Text Fonts */
+  html[data-main-font="poppins"] body {
+    font-family: var(--font-poppins);
+  }
+
+  html[data-main-font="pixelify-sans"] body {
+    font-family: var(--font-pixelify-sans);
+  }
+
+  html[data-main-font="arial"] body {
+    font-family: Arial, sans-serif;
+  }
+
+  html[data-main-font="monospace"] body {
+    font-family: monospace;
+  }
+
+
+  /* Code Fonts */
+  html[data-code-font="m-PLUS-1-Code"] code {
+    font-family: var(--font-m-PLUS-1-Code);
+  }
+
+  html[data-code-font="fira-code"] code {
+    font-family: var(--font-fira-code);
+  }
+
+  html[data-code-font="jetBrains-mono"] code {
+    font-family: var(--font-jetBrains-mono);
+  }
 }

@@ -30,6 +30,31 @@ export async function deleteChatById({ id }: { id: string }) {
   }
 }
 
+export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
+  try {
+    const userChats = await db
+      .select({ id: chat.id })
+      .from(chat)
+      .where(eq(chat.userId, userId));
+
+    if (userChats.length === 0) {
+      return { deletedCount: 0 };
+    }
+
+    const chatIds = userChats.map(c => c.id);
+    await db.delete(message).where(inArray(message.chatId, chatIds));
+
+    const deletedChats = await db
+      .delete(chat)
+      .where(eq(chat.userId, userId))
+      .returning();
+
+    return { deletedCount: deletedChats.length };
+  } catch {
+    throw new Error("Failed to delete all chats by user id");
+  }
+}
+
 export async function getChatsByUserId({ limit, skip, userId }: { limit: number; skip: number; userId: string }) {
   try {
     const chats = await db

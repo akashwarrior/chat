@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { getChatsByUserId } from "@/lib/db/queries";
+import { deleteAllChatsByUserId, getChatsByUserId } from "@/lib/db/queries";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -15,4 +15,12 @@ export async function GET(request: NextRequest) {
   });
 
   return Response.json(chats);
+}
+
+export async function DELETE(request: NextRequest) {
+  const userId = request.headers.get("x-user-id") as string;
+
+  const result = await deleteAllChatsByUserId({ userId });
+
+  return Response.json(result, { status: 200 });
 }

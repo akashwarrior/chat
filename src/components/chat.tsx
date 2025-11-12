@@ -6,7 +6,7 @@ import { Messages } from "./messages"
 import { ChatInput } from "./chat-input"
 import { usePathname } from "next/navigation"
 import { DefaultChatTransport } from "ai"
-import { getChatHistoryPaginationKey } from "./sidebar-history"
+import { getChatHistoryPaginationKey } from "@/hooks/use-chat-history"
 import { unstable_serialize } from "swr/infinite"
 import { Chat as AiChat, UIMessage, useChat } from "@ai-sdk/react"
 import {

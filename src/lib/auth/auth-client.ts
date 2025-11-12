@@ -4,4 +4,4 @@ const authClient = createAuthClient({
     //you can pass client configuration here
 })
 
-export const { useSession, signIn, signOut } = authClient
+export const { useSession, signIn, signOut, listSessions, revokeSession, deleteUser } = authClient
