@@ -7,11 +7,13 @@ export async function GET(request: NextRequest) {
 
   const limit = parseInt(searchParams.get("limit") || "10", 10);
   const skip = parseInt(searchParams.get("skip") || "0", 10);
+  const searchQuery = searchParams.get("searchQuery") || null;
 
   const chats = await getChatsByUserId({
     userId,
     limit,
     skip,
+    searchQuery,
   });
 
   return Response.json(chats);

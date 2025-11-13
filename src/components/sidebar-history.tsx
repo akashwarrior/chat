@@ -26,7 +26,7 @@ const groupChatsByDate = (chats: Chat[]): GroupedChats => {
 
   return chats.reduce(
     (groups, chat) => {
-      const chatDate = new Date(chat.createdAt);
+      const chatDate = new Date(chat.updatedAt);
 
       if (isToday(chatDate)) {
         groups["Today"].push(chat);
@@ -54,13 +54,16 @@ const groupChatsByDate = (chats: Chat[]): GroupedChats => {
 
 interface SidebarHistoryProps {
   showDialog: (id: string) => void;
+  searchQuery: string;
 }
 
-export function SidebarHistory({ showDialog }: SidebarHistoryProps) {
+export function SidebarHistory({ showDialog, searchQuery }: SidebarHistoryProps) {
   const pathname = usePathname();
   const selectedChatId = pathname.split("/").pop();
 
-  const { data, hasMore, isLoading, error, loadMore } = useChatHistory();
+  const { data, hasMore, isLoading, error, loadMore } = useChatHistory({
+    searchQuery,
+  });
 
   const chats = data?.flat() ?? [];
   const groupedChats = chats.length > 0 ? groupChatsByDate(chats) : null;

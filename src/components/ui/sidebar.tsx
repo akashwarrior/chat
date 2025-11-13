@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useState, useContext, createContext } from "react";
+import { useState, useContext, createContext, useEffect } from "react";
 import { PanelLeftIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ const SIDEBAR_WIDTH_ICON = "3rem";
 
 type SidebarContextProps = {
   open: boolean;
-  setOpen: (open: boolean) => void;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
 };
 
 const SidebarContext = createContext<SidebarContextProps | null>(null);
@@ -45,15 +45,14 @@ function SidebarProvider({
   children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const handleOpen = (value: boolean) => {
-    setOpen(value);
 
+  useEffect(() => {
     // This sets the cookie to keep the sidebar state.
-    document.cookie = `${SIDEBAR_COOKIE_NAME}=${value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
-  };
+    document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+  }, [open])
 
   return (
-    <SidebarContext.Provider value={{ open, setOpen: handleOpen }}>
+    <SidebarContext.Provider value={{ open, setOpen }}>
       <div
         data-slot="sidebar-wrapper"
         style={
@@ -142,7 +141,7 @@ function Sidebar({ children }: { children?: React.ReactNode }) {
 }
 
 function SidebarTrigger() {
-  const { open, setOpen } = useSidebar();
+  const { setOpen } = useSidebar();
 
   return (
     <Button
@@ -151,7 +150,7 @@ function SidebarTrigger() {
       variant="ghost"
       size="icon"
       className="size-9"
-      onClick={() => setOpen(!open)}
+      onClick={() => setOpen(prev => !prev)}
     >
       <PanelLeftIcon />
     </Button>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { mutate } from "swr";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { User } from "better-auth";
@@ -40,6 +40,13 @@ export function AppSidebar({ user: initialUser }: { user?: UserWithIsAnonymous; 
   const pathname = usePathname();
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const handleDialogOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -89,13 +96,18 @@ export function AppSidebar({ user: initialUser }: { user?: UserWithIsAnonymous; 
           <Input
             placeholder="Search your threads..."
             className="flex-1 border-none bg-transparent! focus-visible:ring-0"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </SidebarHeader>
 
       <SidebarContent className="p-3.5 flex-1">
         {user ? (
-          <SidebarHistory showDialog={setDeleteId} />
+          <SidebarHistory
+            showDialog={setDeleteId}
+            searchQuery={debouncedSearchQuery}
+          />
         ) : (
           <div className="px-2 text-sm text-zinc-500">
             Login to save and revisit previous chats!

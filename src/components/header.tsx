@@ -10,19 +10,25 @@ import { SidebarTrigger, useSidebar } from "./ui/sidebar";
 import Link from "next/link";
 
 export default function Header() {
-  const { open: isSidebarOpen } = useSidebar();
+  const { open: isSidebarOpen, setOpen } = useSidebar();
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "k" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        setIsSearchModalOpen((open) => !open);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key.toLowerCase() === "k") {
+          e.preventDefault();
+          setIsSearchModalOpen((open) => !open);
+        }
+        if (e.key.toLowerCase() === "b") {
+          e.preventDefault();
+          setOpen(prev => !prev);
+        }
       }
-    };
+    }
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   return (

@@ -1,7 +1,6 @@
-import { getKey, getRedisClient } from "@/lib/redis";
+import { getKey } from "@/lib/redis";
 import { UI_MESSAGE_STREAM_HEADERS } from "ai";
-import { after } from "next/server";
-import { createResumableStreamContext } from "resumable-stream";
+import { StreamContext } from "@/lib/stream-context";
 
 export async function GET(
   _: Request,
@@ -14,17 +13,7 @@ export async function GET(
     return new Response(null, { status: 204 });
   }
 
-  const redisClientPublisher = getRedisClient();
-  const redisClientSubscriber = getRedisClient();
-  await Promise.all([
-    redisClientPublisher.connect(),
-    redisClientSubscriber.connect(),
-  ]);
-  const streamContext = createResumableStreamContext({
-    waitUntil: after,
-    publisher: redisClientPublisher,
-    subscriber: redisClientSubscriber,
-  });
+  const streamContext = StreamContext.getInstance().getStreamContext();
 
   return new Response(await streamContext.resumeExistingStream(streamId), {
     headers: UI_MESSAGE_STREAM_HEADERS,

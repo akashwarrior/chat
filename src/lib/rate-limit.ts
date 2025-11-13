@@ -69,7 +69,9 @@ export async function setUsage(userId: string, value: string) {
 }
 
 export async function handleUserMigration(userId: string, newUserId: string) {
-  const currentUsage = await getUsage(userId, true);
-  await setUsage(newUserId, String(currentUsage.usage));
+  const { usage: currentUsage } = await getUsage(userId, true);
+  const { usage: pastUsage } = await getUsage(newUserId, false);
+
+  await setUsage(newUserId, String(pastUsage + currentUsage));
   await deleteKey({ key: `${REDIS_KEY}:${userId}` });
 }

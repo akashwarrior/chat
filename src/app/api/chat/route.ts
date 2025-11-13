@@ -1,9 +1,9 @@
 import { google } from "@ai-sdk/google";
 import { DEFAULT_MODEL, getModelConfig } from "@/ai/config";
-import { after } from "next/server";
-import { getRedisClient, setKey } from "@/lib/redis";
+import { StreamContext } from "@/lib/stream-context";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
-import { createResumableStreamContext } from "resumable-stream";
+import { setKey } from "@/lib/redis";
+
 import {
   saveChat,
   getChatById,
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
           ...getModelConfig(modelId),
           system: `
     - you will generate a short title based on the first message a user begins a conversation with
-    - ensure it is not more than 80 characters long
+    - ensure it is not more than 25 characters long
     - the title should be a summary of the user's message
     - do not use quotes or colons`,
           messages: modelMessages,
@@ -136,18 +136,8 @@ export async function POST(request: Request) {
       },
       async consumeSseStream({ stream }) {
         const streamId = generateId();
-        const redisClientPublisher = getRedisClient();
-        const redisClientSubscriber = getRedisClient();
-        await Promise.all([
-          redisClientPublisher.connect(),
-          redisClientSubscriber.connect(),
-          setKey({ key: id, value: streamId, ttl: 60 * 5 }),
-        ]);
-        const streamContext = createResumableStreamContext({
-          waitUntil: after,
-          publisher: redisClientPublisher,
-          subscriber: redisClientSubscriber,
-        });
+        await setKey({ key: id, value: streamId, ttl: 60 * 5 });
+        const streamContext = StreamContext.getInstance().getStreamContext();
         await streamContext.createNewResumableStream(streamId, () => stream);
       },
     });
