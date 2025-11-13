@@ -2,6 +2,7 @@ import { google } from "@ai-sdk/google";
 import { DEFAULT_MODEL, getModelConfig } from "@/ai/config";
 import { after } from "next/server";
 import { getRedisClient, setKey } from "@/lib/redis";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { createResumableStreamContext } from "resumable-stream";
 import {
   saveChat,
@@ -24,18 +25,44 @@ import {
 
 const saveMessage = (message: UIMessage, chatId: string) =>
   saveMessages({
-    messages: [{
-      ...message,
-      chatId,
-      attachments: [],
-      createdAt: new Date(),
-    }],
+    messages: [
+      {
+        ...message,
+        chatId,
+        attachments: [],
+        createdAt: new Date(),
+      },
+    ],
   });
 
 export async function POST(request: Request) {
   try {
     const userId = request.headers.get("x-user-id") as string;
-    const { id, messages, modelId = DEFAULT_MODEL, trigger } = await request.json();
+    const isAnonymous = request.headers.get("x-is-anonymous") === "true";
+    const {
+      id,
+      messages,
+      modelId = DEFAULT_MODEL,
+      trigger,
+    } = await request.json();
+
+    const rateLimitResult = await checkRateLimit(userId, isAnonymous);
+
+    if (!rateLimitResult.success) {
+      const resetTime = rateLimitResult.resetAt.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      return Response.json(
+        {
+          error: "Rate limit exceeded",
+          message: `You've reached your daily limit of ${rateLimitResult.limit} messages. ${isAnonymous && `Sign in to get ${RATE_LIMITS.AUTHENTICATED_DAILY} messages per day.`} Limit resets at ${resetTime}.`,
+        },
+        { status: 429 },
+      );
+    }
 
     const chat = await getChatById({ id });
 
@@ -55,23 +82,17 @@ export async function POST(request: Request) {
               deleteMessagesByChatIdAfterTimestamp({
                 chatId: id,
                 timestamp: message.createdAt,
-              })
-            ).then(() =>
-              saveMessage(lastMessage, id)
+              }),
             )
-        )
+            .then(() => saveMessage(lastMessage, id)),
+        );
       } else {
-        promises.push(
-          saveMessage(lastMessage, id)
-        )
+        promises.push(saveMessage(lastMessage, id));
       }
     } else {
       promises.push(
-        saveChat({ id, userId })
-          .then(() =>
-            saveMessage(lastMessage, id)
-          )
-      )
+        saveChat({ id, userId }).then(() => saveMessage(lastMessage, id)),
+      );
 
       promises.push(
         generateText({
@@ -82,10 +103,8 @@ export async function POST(request: Request) {
     - the title should be a summary of the user's message
     - do not use quotes or colons`,
           messages: modelMessages,
-        }).then(({ text }) =>
-          updateChatTitleById({ id, title: text })
-        )
-      )
+        }).then(({ text }) => updateChatTitleById({ id, title: text })),
+      );
     }
 
     const result = streamText({

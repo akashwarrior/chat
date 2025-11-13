@@ -1,7 +1,8 @@
-import { createAuthClient } from "better-auth/react"; // make sure to import from better-auth/react
+import { createAuthClient } from "better-auth/react";
+import { anonymousClient } from "better-auth/client/plugins";
 
 const authClient = createAuthClient({
-  //you can pass client configuration here
+  plugins: [anonymousClient()],
 });
 
 export const {

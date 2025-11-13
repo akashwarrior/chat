@@ -1,6 +1,7 @@
 "use client";
 
 import { mutate } from "swr";
+import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import { Messages } from "./messages";
 import { ChatInput } from "./chat-input";
@@ -52,6 +53,23 @@ export function Chat({ id, initialMessages, isReadonly }: ChatProps) {
     ...chatClient,
     messages: initialMessages,
     onFinish: () => mutate(unstable_serialize(getChatHistoryPaginationKey)),
+    onError: (error) => {
+      const message = error?.message ?? "Something went wrong.";
+
+      try {
+        const parsed = JSON.parse(message);
+        if (parsed && typeof parsed === "object" && "error" in parsed) {
+          toast.error(String(parsed.error), {
+            description: String(parsed.message),
+          });
+          return;
+        }
+      } catch {}
+
+      toast.error("Failed to send message", {
+        description: message,
+      });
+    },
   });
 
   const isLoading = status === "streaming" || status === "submitted";

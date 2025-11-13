@@ -2,11 +2,9 @@ import { db } from "@/lib/db";
 import type { Chat, DBMessage } from "@/lib/db/schema";
 import type { VisibilityType } from "@/lib/types";
 import { chat, message } from "@/lib/db/schema";
-import { and, asc, desc, eq, gte, inArray } from "drizzle-orm";
+import { and, asc, eq, gte, inArray } from "drizzle-orm";
 
-export async function saveChat(
-  newChat: Pick<Chat, "userId" | "id">,
-) {
+export async function saveChat(newChat: Pick<Chat, "userId" | "id">) {
   try {
     return await db.insert(chat).values({
       ...newChat,
@@ -17,7 +15,13 @@ export async function saveChat(
   }
 }
 
-export async function updateChatTitleById({ id, title }: { id: string; title: string }) {
+export async function updateChatTitleById({
+  id,
+  title,
+}: {
+  id: string;
+  title: string;
+}) {
   try {
     return await db.update(chat).set({ title }).where(eq(chat.id, id));
   } catch {

@@ -3,7 +3,9 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import * as schema from "../db/auth-schema";
 import { getRedisClient } from "../redis";
+import { anonymous } from "better-auth/plugins";
 import { db } from "@/lib/db";
+import { eq } from "drizzle-orm";
 
 const redis = getRedisClient();
 await redis.connect();
@@ -45,5 +47,22 @@ export const auth = betterAuth({
     },
   },
 
-  plugins: [nextCookies()],
+  plugins: [
+    anonymous({
+      onLinkAccount: async ({ anonymousUser, newUser }) => {
+        await db
+          .update(schema.user)
+          .set({
+            email: newUser.user.email,
+            name: newUser.user.name,
+            image: newUser.user.image,
+            isAnonymous: false,
+          })
+          .where(eq(schema.user.id, anonymousUser.user.id));
+      },
+      disableDeleteAnonymousUser: true,
+      emailDomainName: "chat-ai.com",
+    }),
+    nextCookies(),
+  ],
 });

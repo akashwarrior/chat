@@ -17,6 +17,7 @@ import { PreviewAttachment } from "./messages/preview-attachment";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { ArrowUpIcon, PaperclipIcon, StopCircleIcon } from "lucide-react";
+import { signIn, useSession } from "@/lib/auth/auth-client";
 
 type ChatInputProps = {
   isLoading: boolean;
@@ -56,6 +57,7 @@ const animatedItemProps = {
 } as const;
 
 export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
+  const { data: session, isPending } = useSession();
   const { input, setInput } = useChatInputStore();
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [uploadQueue, setUploadQueue] = useState<string[]>([]);
@@ -159,6 +161,20 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
     }
   };
 
+  const handleAttachmentClick = () => {
+    const isAnonymous = session?.user?.isAnonymous;
+    if (isAnonymous && !isPending) {
+      toast.error("Sign in to upload attachments", {
+        action: {
+          label: "Sign in",
+          onClick: () => signIn.social({ provider: "google" }),
+        },
+      });
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -243,7 +259,7 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
         <div className="flex items-center gap-1">
           <motion.div {...animatedItemProps}>
             <Button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleAttachmentClick}
               size="icon-sm"
               type="button"
               variant="outline"

@@ -26,8 +26,7 @@ export async function GET(
     subscriber: redisClientSubscriber,
   });
 
-  return new Response(
-    await streamContext.resumeExistingStream(streamId),
-    { headers: UI_MESSAGE_STREAM_HEADERS }
-  );
+  return new Response(await streamContext.resumeExistingStream(streamId), {
+    headers: UI_MESSAGE_STREAM_HEADERS,
+  });
 }

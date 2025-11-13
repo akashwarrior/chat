@@ -92,7 +92,8 @@ export default function EmptyMessage() {
   const [direction, setDirection] = useState<1 | -1>(1);
 
   const firstName = useMemo(
-    () => session?.user?.name?.split(" ")[0] ?? "",
+    () =>
+      (!session?.user?.isAnonymous && session?.user?.name?.split(" ")[0]) || "",
     [session?.user?.name],
   );
 

@@ -12,6 +12,10 @@ export async function proxy(req: NextRequest) {
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-user-id", session.user.id);
+  requestHeaders.set(
+    "x-is-anonymous",
+    session.user.isAnonymous ? "true" : "false",
+  );
 
   return NextResponse.next({
     request: {

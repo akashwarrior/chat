@@ -1,18 +1,10 @@
 CREATE TABLE "Chat" (
 	"id" uuid PRIMARY KEY NOT NULL,
-	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"title" text NOT NULL,
 	"userId" text NOT NULL,
-	"visibility" varchar DEFAULT 'private' NOT NULL
-);
---> statement-breakpoint
-CREATE TABLE "Document" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"visibility" varchar DEFAULT 'private' NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
-	"title" text NOT NULL,
-	"content" text,
-	"text" varchar DEFAULT 'text' NOT NULL,
-	"userId" text NOT NULL
+	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "Message" (
@@ -58,6 +50,7 @@ CREATE TABLE "user" (
 	"email" text NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
+	"is_anonymous" boolean DEFAULT false,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
@@ -72,8 +65,14 @@ CREATE TABLE "verification" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "Chat" ADD CONSTRAINT "Chat_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "Document" ADD CONSTRAINT "Document_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "Chat" ADD CONSTRAINT "Chat_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "Message" ADD CONSTRAINT "Message_chatId_Chat_id_fk" FOREIGN KEY ("chatId") REFERENCES "public"."Chat"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "user_id_index" ON "Chat" USING btree ("userId");--> statement-breakpoint
+CREATE INDEX "chat_id_index" ON "Message" USING btree ("chatId");--> statement-breakpoint
+CREATE INDEX "account_user_id_index" ON "account" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "token_index" ON "session" USING btree ("token");--> statement-breakpoint
+CREATE INDEX "session_user_id_index" ON "session" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "email_index" ON "user" USING btree ("email");--> statement-breakpoint
+CREATE INDEX "identifier_index" ON "verification" USING btree ("identifier");
