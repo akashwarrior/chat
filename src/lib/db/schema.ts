@@ -20,7 +20,7 @@ export const chat = pgTable(
     title: text("title").notNull(),
     userId: text("userId")
       .notNull()
-      .references(() => user.id),
+      .references(() => user.id, { onDelete: "cascade" }),
     visibility: varchar("visibility", { enum: ["private", "public"] })
       .notNull()
       .default("private"),
