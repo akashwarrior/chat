@@ -38,3 +38,13 @@ export async function getKey({ key }: { key: string }) {
     await client.close();
   }
 }
+
+export async function deleteKey({ key }: { key: string }) {
+  const client = getRedisClient();
+  try {
+    await client.connect();
+    await client.del(key);
+  } finally {
+    await client.close();
+  }
+}

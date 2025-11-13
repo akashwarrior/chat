@@ -101,6 +101,10 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
   const handleFormSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
 
+    if (!session?.user && !isPending) {
+      await signIn.anonymous();
+    }
+
     if (isLoading) {
       return;
     }

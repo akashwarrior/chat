@@ -1,4 +1,4 @@
-import { getKey, getRedisClient } from "./redis";
+import { deleteKey, getKey, setKey } from "./redis";
 
 export interface RateLimitResult {
   success: boolean;
@@ -13,13 +13,16 @@ export const RATE_LIMITS = {
 
 const REDIS_KEY = "rate_limit";
 
+const getResetAt = () => {
+  const resetAt = new Date(Date.now());
+  resetAt.setUTCHours(24, 0, 0, 0);
+  return resetAt;
+}
+
 export async function checkRateLimit(userId: string, isAnonymous: boolean): Promise<RateLimitResult> {
-  const client = getRedisClient();
   const limit = isAnonymous ? RATE_LIMITS.ANONYMOUS_DAILY : RATE_LIMITS.AUTHENTICATED_DAILY;
 
-  const now = new Date();
-  const resetAt = new Date(now);
-  resetAt.setUTCHours(24, 0, 0, 0);
+  const resetAt = getResetAt();
 
   const result: RateLimitResult = {
     success: true,
@@ -28,34 +31,20 @@ export async function checkRateLimit(userId: string, isAnonymous: boolean): Prom
   }
 
   try {
-    await client.connect();
-    const key = `${REDIS_KEY}:${userId}`;
+    const { usage } = await getUsage(userId, isAnonymous);
 
-    const currentCount = await client.get(key);
-    const count = currentCount ? parseInt(currentCount, 10) : 0;
-
-    if (count >= limit) {
+    if (usage >= limit) {
       return {
         ...result,
         success: false,
       }
     }
 
-    const millisecondsUntilReset = Math.max(1000, resetAt.getTime() - now.getTime());
-    const newCount = count + 1;
-    await client.set(key, newCount.toString(), {
-      expiration: {
-        type: "PX",
-        value: millisecondsUntilReset,
-      },
-    });
-
+    await setUsage(userId, String(usage + 1));
     return result;
   } catch (error) {
     console.error("Rate limit check failed:", error);
     return result;
-  } finally {
-    await client.quit();
   }
 }
 
@@ -70,4 +59,17 @@ export async function getUsage(userId: string, isAnonymous: boolean): Promise<Us
     usage: key ? parseInt(key, 10) : 0,
     limit: isAnonymous ? RATE_LIMITS.ANONYMOUS_DAILY : RATE_LIMITS.AUTHENTICATED_DAILY,
   };
+}
+
+export async function setUsage(userId: string, value: string) {
+  const key = `${REDIS_KEY}:${userId}`;
+  const resetAt = getResetAt();
+  const secondsUntilReset = Math.floor((resetAt.getTime() - Date.now()) / 1000);
+  await setKey({ key, value, ttl: secondsUntilReset });
+}
+
+export async function handleUserMigration(userId: string, newUserId: string) {
+  const currentUsage = await getUsage(userId, true);
+  await setUsage(newUserId, String(currentUsage.usage));
+  await deleteKey({ key: `${REDIS_KEY}:${userId}` });
 }

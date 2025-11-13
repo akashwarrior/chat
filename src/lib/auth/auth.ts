@@ -7,6 +7,7 @@ import { getRedisClient } from "../redis";
 import { anonymous } from "better-auth/plugins";
 import { db } from "@/lib/db";
 import { eq } from "drizzle-orm";
+import { handleUserMigration } from "../rate-limit";
 
 const redis = getRedisClient();
 await redis.connect();
@@ -59,13 +60,14 @@ export const auth = betterAuth({
 
   plugins: [
     anonymous({
-      onLinkAccount: async ({ anonymousUser, newUser }) => {
-        await db
-          .update(schema.chat)
-          .set({
-            userId: newUser.user.id,
-          })
-          .where(eq(schema.chat.userId, anonymousUser.user.id));
+      onLinkAccount: async ({ anonymousUser: { user: { id } }, newUser: { user: { id: newId } } }) => {
+        await Promise.all([
+          handleUserMigration(id, newId),
+          db
+            .update(schema.chat)
+            .set({ userId: newId })
+            .where(eq(schema.chat.userId, id))
+        ])
       },
       emailDomainName: "chat-ai.com",
     }),

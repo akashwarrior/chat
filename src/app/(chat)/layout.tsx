@@ -4,13 +4,12 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import Header from "@/components/header";
 import { auth } from "@/lib/auth/auth";
 
-export default async function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const SIDEBAR_COOKIE_NAME = "sidebar_state";
+
+export default async function Layout({ children }: { children: React.ReactNode }) {
   const [cookieStore, headersList] = await Promise.all([cookies(), headers()]);
-  const isCollapsed = cookieStore.get("sidebar_state")?.value !== "true";
+  const sidebarCookie = cookieStore.get(SIDEBAR_COOKIE_NAME);
+  const isCollapsed = sidebarCookie ? sidebarCookie.value !== "true" : false;
 
   const session = await auth.api.getSession({ headers: headersList });
 

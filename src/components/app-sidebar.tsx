@@ -4,11 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { mutate } from "swr";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { User } from "better-auth";
-import { signIn, useSession } from "@/lib/auth/auth-client";
+import { useSession } from "@/lib/auth/auth-client";
 import { usePathname, useRouter } from "next/navigation";
 import { unstable_serialize } from "swr/infinite";
 import { SidebarHistory } from "./sidebar-history";
@@ -34,28 +34,12 @@ interface UserWithIsAnonymous extends User {
   isAnonymous?: boolean | null;
 }
 
-export function AppSidebar({
-  user: initialUser,
-}: {
-  user?: UserWithIsAnonymous;
-}) {
-  const { data: session, isPending } = useSession();
-  const [user, setUser] = useState<UserWithIsAnonymous | null>(
-    initialUser || null,
-  );
+export function AppSidebar({ user: initialUser }: { user?: UserWithIsAnonymous; }) {
+  const { data: session } = useSession();
+  const user = initialUser || session?.user;
   const pathname = usePathname();
   const router = useRouter();
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!user && !session && !isPending) {
-      signIn.anonymous();
-    }
-
-    if (session) {
-      setUser(session.user);
-    }
-  }, [session, isPending]);
 
   const handleDialogOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
