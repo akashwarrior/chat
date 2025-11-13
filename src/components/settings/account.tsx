@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatDistanceToNow } from "date-fns";
 import { Monitor, MonitorIcon, Trash2 } from "lucide-react";
 import type { Session } from "better-auth/types";
+import type { UsageResult } from "@/lib/rate-limit";
 
 import {
   listSessions,
@@ -29,7 +30,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export function Account() {
+export function Account({ usage }: { usage: UsageResult }) {
   return (
     <>
       <div className="md:hidden">
@@ -49,14 +50,14 @@ export function Account() {
                     <span className="text-xs text-muted-foreground">
                       Standard
                     </span>
-                    <span className="text-xs font-medium">0/20</span>
+                    <span className="text-xs font-medium">{usage.usage}/{usage.limit}</span>
                   </div>
                   <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-0" />
+                    <div className="h-full bg-primary w-0" style={{ width: `${(usage.usage / usage.limit) * 100}%` }} />
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  20 messages remaining
+                  {usage.limit - usage.usage} messages remaining
                 </p>
               </div>
             </CardContent>
@@ -128,7 +129,7 @@ function DeviceDialog({ children }: { children: React.ReactNode }) {
     try {
       if (isCurrentSession) {
         await Promise.all([revokeSession({ token: sessionToken }), signOut()]);
-        router.push("/auth");
+        router.refresh();
       } else {
         await revokeSession({ token: sessionToken });
         setSessions(sessions?.filter((s) => s.token !== sessionToken) || null);
@@ -208,7 +209,7 @@ function DeleteAccountDialog({ children }: { children: React.ReactNode }) {
       loading: "Deleting account...",
       success: async () => {
         await signOut();
-        router.push("/auth");
+        router.refresh();
         return "Account deleted successfully!";
       },
       error: "Failed to delete account",

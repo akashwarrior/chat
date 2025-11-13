@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { deleteAllChatsByUserId } from "../db/queries";
 import * as schema from "../db/schema";
 import { getRedisClient } from "../redis";
 import { anonymous } from "better-auth/plugins";
@@ -30,6 +31,15 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 60 * 60,
+    },
+  },
+
+  user: {
+    deleteUser: {
+      enabled: true,
+      beforeDelete: async (user) => {
+        await deleteAllChatsByUserId({ userId: user.id });
+      },
     },
   },
 

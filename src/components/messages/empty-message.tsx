@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { useChatInputStore } from "@/store/chat-input-store";
-import { useSession } from "@/lib/auth/auth-client";
 import { TransitionPanel } from "../ui/transition-panel";
 import { TextEffect } from "../ui/text-effect";
 import type { LucideIcon } from "lucide-react";
@@ -85,36 +84,24 @@ const PANEL_TRANSITION = {
   opacity: { duration: 0.2 },
 } as const;
 
-export default function EmptyMessage() {
-  const { data: session } = useSession();
+export default function EmptyMessage({ userName }: { userName?: string }) {
   const { input, setInput } = useChatInputStore();
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
 
-  const firstName = useMemo(
-    () =>
-      (!session?.user?.isAnonymous && session?.user?.name?.split(" ")[0]) || "",
-    [session?.user?.name],
-  );
 
-  const handleSetActiveIndex = useCallback(
-    (index: number) => {
-      if (index === activeIndex) {
-        return;
-      }
+  const handleSetActiveIndex = (index: number) => {
+    if (index === activeIndex) {
+      return;
+    }
 
-      setDirection(index > activeIndex ? 1 : -1);
-      setActiveIndex(index);
-    },
-    [activeIndex],
-  );
+    setDirection(index > activeIndex ? 1 : -1);
+    setActiveIndex(index);
+  };
 
-  const handlePromptSelect = useCallback(
-    (prompt: string) => {
-      setInput(prompt);
-    },
-    [setInput],
-  );
+  const handlePromptSelect = (prompt: string) => {
+    setInput(prompt);
+  };
 
   if (input) {
     return null;
@@ -127,7 +114,7 @@ export default function EmptyMessage() {
       exit={{ opacity: 0, y: 30 }}
       initial={{ opacity: 0, y: 30 }}
     >
-      <HeroHeading firstName={firstName} />
+      <HeroHeading firstName={userName?.split(" ")[0] || ""} />
 
       <FeatureTabs
         activeIndex={activeIndex}

@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { DefaultChatTransport } from "ai";
 import { getChatHistoryPaginationKey } from "@/hooks/use-chat-history";
 import { unstable_serialize } from "swr/infinite";
+import EmptyMessage from "./messages/empty-message";
 import { Chat as AiChat, UIMessage, useChat } from "@ai-sdk/react";
 import {
   Conversation,
@@ -18,11 +19,12 @@ import {
 
 type ChatProps = {
   id?: string;
+  userName?: string;
   initialMessages: UIMessage[];
   isReadonly: boolean;
 };
 
-export function Chat({ id, initialMessages, isReadonly }: ChatProps) {
+export function Chat({ id, userName, initialMessages, isReadonly }: ChatProps) {
   const pathname = usePathname();
   const [chatId, setChatId] = useState<string | undefined>(id);
 
@@ -64,7 +66,7 @@ export function Chat({ id, initialMessages, isReadonly }: ChatProps) {
           });
           return;
         }
-      } catch {}
+      } catch { }
 
       toast.error("Failed to send message", {
         description: message,
@@ -107,6 +109,7 @@ export function Chat({ id, initialMessages, isReadonly }: ChatProps) {
     <div className="flex w-full max-h-screen min-h-full flex-col bg-background relative overflow-hidden">
       <Conversation>
         <ConversationContent className="overflow-x-hidden pt-16 md:pt-12 pb-44 min-h-full">
+          {messages.length === 0 && <EmptyMessage userName={userName} />}
           <Messages
             isReadonly={isReadonly}
             messages={messages}

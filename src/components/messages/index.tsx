@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { useState } from "react";
 import type { UIMessage } from "@ai-sdk/react";
 import { UIDataTypes, UIMessagePart, UITools } from "ai";
-import EmptyMessage from "./empty-message";
 import { MessageActions } from "./message-actions";
 import { MessagePart } from "./message-part";
 
@@ -26,10 +25,6 @@ export function Messages({
   const [messageBeingEdited, setMessageBeingEdited] = useState<string | null>(
     null,
   );
-
-  if (messages.length === 0) {
-    return <EmptyMessage />;
-  }
 
   const handleEditStart = (messageId: string) => {
     if (isReadonly) {

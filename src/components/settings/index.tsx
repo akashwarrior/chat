@@ -8,17 +8,20 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Customization } from "@/components/settings/customization";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ThemeToggle from "@/components/theme-toggle";
+import { UsageResult } from "@/lib/rate-limit";
 
 interface SettingsProps {
   mainTextFont: string;
   codeFont: string;
   statsForNerds: boolean;
+  usage: UsageResult;
 }
 
 export function Settings({
   mainTextFont,
   codeFont,
   statsForNerds,
+  usage,
 }: SettingsProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -35,7 +38,7 @@ export function Settings({
   };
 
   return (
-    <main className="flex-1 px-4 py-8 lg:p-8 overflow-x-hidden overflow-y-auto max-w-4xl">
+    <main className="flex-1 px-4 py-8 lg:p-8 max-w-4xl">
       <div className="flex items-center justify-between mb-6 lg:mb-8 gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold">Settings</h1>
         <div className="flex items-center gap-2">
@@ -55,7 +58,7 @@ export function Settings({
         </TabsList>
 
         <TabsContent value="account" className="space-y-8">
-          <Account />
+          <Account usage={usage} />
         </TabsContent>
 
         <TabsContent value="customization" className="space-y-6">

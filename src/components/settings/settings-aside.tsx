@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
 import { User } from "better-auth";
+import { UsageResult } from "@/lib/rate-limit";
 
-export function SettingsAside({ user }: { user: User }) {
+
+export function SettingsAside({ user, usage }: { user: User, usage: UsageResult }) {
   const router = useRouter();
 
   return (
@@ -49,14 +51,14 @@ export function SettingsAside({ user }: { user: User }) {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-muted-foreground">Standard</span>
-                <span className="text-xs font-medium">0/20</span>
+                <span className="text-xs font-medium">{usage.usage}/{usage.limit}</span>
               </div>
               <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-primary w-0" />
+                <div className="h-full bg-primary w-0" style={{ width: `${(usage.usage / usage.limit) * 100}%` }} />
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              20 messages remaining
+              {usage.limit - usage.usage} messages remaining
             </p>
           </div>
         </CardContent>
