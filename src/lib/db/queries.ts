@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import type { Chat, DBMessage } from "@/lib/db/schema";
 import type { VisibilityType } from "@/lib/types";
 import { chat, message } from "@/lib/db/schema";
-import { and, asc, eq, gte, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike } from "drizzle-orm";
 
 export async function saveChat(newChat: Pick<Chat, "userId" | "id">) {
   try {
@@ -31,8 +31,6 @@ export async function updateChatTitleById({
 
 export async function deleteChatById({ id }: { id: string }) {
   try {
-    await db.delete(message).where(eq(message.chatId, id));
-
     const [chatsDeleted] = await db
       .delete(chat)
       .where(eq(chat.id, id))
@@ -45,18 +43,6 @@ export async function deleteChatById({ id }: { id: string }) {
 
 export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   try {
-    const userChats = await db
-      .select({ id: chat.id })
-      .from(chat)
-      .where(eq(chat.userId, userId));
-
-    if (userChats.length === 0) {
-      return { deletedCount: 0 };
-    }
-
-    const chatIds = userChats.map((c) => c.id);
-    await db.delete(message).where(inArray(message.chatId, chatIds));
-
     const deletedChats = await db
       .delete(chat)
       .where(eq(chat.userId, userId))
@@ -72,17 +58,22 @@ export async function getChatsByUserId({
   limit,
   skip,
   userId,
+  searchQuery,
 }: {
   limit: number;
   skip: number;
   userId: string;
+  searchQuery: string | null;
 }) {
   try {
+    const whereClause = searchQuery ?
+      and(eq(chat.userId, userId), ilike(chat.title, `%${searchQuery}%`)) :
+      eq(chat.userId, userId);
     const chats = await db
       .select()
       .from(chat)
-      .where(eq(chat.userId, userId))
-      .orderBy(asc(chat.updatedAt))
+      .where(whereClause)
+      .orderBy(desc(chat.updatedAt))
       .limit(limit)
       .offset(skip);
 
@@ -107,7 +98,16 @@ export async function getChatById({ id }: { id: string }) {
 
 export async function saveMessages({ messages }: { messages: DBMessage[] }) {
   try {
-    return await db.insert(message).values(messages);
+    const now = new Date();
+
+    return await db.transaction(async (tx) => {
+      await tx
+        .update(chat)
+        .set({ updatedAt: now })
+        .where(eq(chat.id, messages[0].chatId));
+
+      return tx.insert(message).values(messages);
+    });
   } catch {
     throw new Error("Failed to save messages");
   }
@@ -141,24 +141,9 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   timestamp: Date;
 }) {
   try {
-    const messagesToDelete = await db
-      .select({ id: message.id })
-      .from(message)
-      .where(
-        and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)),
-      );
-
-    const messageIds = messagesToDelete.map(
-      (currentMessage) => currentMessage.id,
-    );
-
-    if (messageIds.length > 0) {
-      return await db
-        .delete(message)
-        .where(
-          and(eq(message.chatId, chatId), inArray(message.id, messageIds)),
-        );
-    }
+    return await db
+      .delete(message)
+      .where(and(eq(message.chatId, chatId), gte(message.createdAt, timestamp)));
   } catch {
     throw new Error("Failed to delete messages by chat id after timestamp");
   }
