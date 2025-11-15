@@ -100,14 +100,15 @@ export async function saveMessages({ messages }: { messages: DBMessage[] }) {
   try {
     const now = new Date();
 
-    return await db.transaction(async (tx) => {
-      await tx
+    return Promise.all([
+      db
         .update(chat)
         .set({ updatedAt: now })
-        .where(eq(chat.id, messages[0].chatId));
+        .where(eq(chat.id, messages[0].chatId)),
+      db
+        .insert(message).values(messages)
+    ]);
 
-      return tx.insert(message).values(messages);
-    });
   } catch {
     throw new Error("Failed to save messages");
   }
