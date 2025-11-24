@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import type { Attachment } from "@/lib/types";
 import { Loader2Icon, XIcon } from "lucide-react";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 export const PreviewAttachment = ({
   className,
@@ -34,9 +35,11 @@ export const PreviewAttachment = ({
           width={64}
         />
       ) : (
-        <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
-          File
-        </div>
+        <Link href={url} target="_blank">
+          <div className="flex size-full items-center justify-center text-muted-foreground text-xs">
+            {name || "File"}
+          </div>
+        </Link>
       )}
 
       {isUploading && (

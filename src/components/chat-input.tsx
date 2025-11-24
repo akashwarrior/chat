@@ -71,7 +71,28 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
     if (!selectedModelId) {
       setSelectedModelId(DEFAULT_MODEL);
     }
-    textareaRef.current?.focus();
+
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea?.focus();
+
+    const handlePaste = async (event: ClipboardEvent) => {
+      const clipboardItems = event.clipboardData?.items;
+      if (!clipboardItems) return;
+
+      const items = Array.from(clipboardItems).filter((item) =>
+        item.type.startsWith('image/') || item.type.startsWith('application/pdf'),
+      );
+      if (items.length === 0) return;
+      event.preventDefault();
+
+      setUploadQueue((prev) => [...prev, 'Pasted image']);
+      await processFiles(items.map((item) => item.getAsFile() as File).filter(Boolean) as File[]);
+    };
+
+    textarea.addEventListener('paste', handlePaste);
+    return () => textarea.removeEventListener('paste', handlePaste);
+
   }, [input]);
 
   const handleAttachmentRemove = (attachmentUrl: string) => {
@@ -187,10 +208,11 @@ export function ChatInput({ isLoading, stop, submit }: ChatInputProps) {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    await processFiles(files);
+  };
 
-    if (files.length === 0) {
-      return;
-    }
+  const processFiles = async (files: File[]) => {
+    if (files.length === 0) return;
 
     setUploadQueue(files.map((file) => file.name));
 

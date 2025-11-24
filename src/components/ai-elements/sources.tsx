@@ -61,7 +61,7 @@ export const Source = ({ href, title, ...props }: SourceProps) => (
     target="_blank"
     {...props}
   >
-    <BookIcon className="h-4 w-4" />
+    <BookIcon size={14} />
     <span className="block font-medium">{title}</span>
   </a>
 );
