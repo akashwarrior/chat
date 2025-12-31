@@ -31,7 +31,7 @@
 
 ## Model Providers
 
-- Gemini 2.5 Pro, Flash, and Flash Lite configured in `src/ai/config.ts`.
+- Gemini 2.5 Pro, Flash, and Flash Lite configured in `ai/config.ts`.
 - Reasoning output (`thinking`) and tool calls ship enabled by default.
 - Swap IDs or extend the list to adopt future Gemini releases.
 
